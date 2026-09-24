@@ -1,0 +1,5 @@
+﻿data.yandex_compute_image.ubuntu
+yandex_compute_instance.web
+yandex_vpc_network.otus
+yandex_vpc_security_group.web
+yandex_vpc_subnet.otus

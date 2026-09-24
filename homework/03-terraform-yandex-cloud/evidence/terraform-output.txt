@@ -1,0 +1,4 @@
+﻿http_url = "http://84.201.180.225/"
+ssh_command = "ssh ubuntu@84.201.180.225"
+vm_private_ip = "10.30.0.22"
+vm_public_ip = "84.201.180.225"

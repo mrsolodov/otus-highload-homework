@@ -1,0 +1,2 @@
+﻿Destroy completed: 2026-09-23 23:58:55 +03:00
+Remaining Terraform state resources: 0

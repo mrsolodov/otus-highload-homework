@@ -1,0 +1,9 @@
+HTTP/1.1 200 OK
+Server: nginx/1.24.0 (Ubuntu)
+Date: Wed, 23 Sep 2026 20:31:47 GMT
+Content-Type: text/html
+Content-Length: 322
+Last-Modified: Wed, 23 Sep 2026 20:11:06 GMT
+Connection: keep-alive
+ETag: "6ab4325a-142"
+Accept-Ranges: bytes

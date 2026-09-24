@@ -1,0 +1,34 @@
+﻿# Terraform state and local configuration
+**/.terraform/
+**/*.tfstate
+**/*.tfstate.*
+**/*.tfvars
+**/*.tfplan
+**/crash.log
+**/crash.*.log
+**/override.tf
+**/override.tf.json
+**/*_override.tf
+**/*_override.tf.json
+
+# Credentials and private keys
+**/*.pem
+**/*.key
+**/*.p12
+**/*.pfx
+**/authorized_key.json
+**/service-account-key.json
+**/.env
+**/.env.*
+
+# Ansible runtime files
+**/*.retry
+
+# Editors and operating systems
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Generated evidence that may contain public IP addresses or identifiers
+**/artifacts/private/

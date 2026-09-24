@@ -1,0 +1,11 @@
+﻿data.yandex_compute_image.ubuntu: Reading...
+yandex_vpc_network.otus: Refreshing state... [id=enp81ss4q91sdqrp2tqr]
+data.yandex_compute_image.ubuntu: Read complete after 0s [id=fd87t0v3qv3ugd0gq3i2]
+yandex_vpc_subnet.otus: Refreshing state... [id=fl8qohk4jl7rc6v6hmt7]
+yandex_vpc_security_group.web: Refreshing state... [id=enpaagck2dgvsv43o5n5]
+yandex_compute_instance.web: Refreshing state... [id=fv4acj24pmnuptbtcsfv]
+
+No changes. Your infrastructure matches the configuration.
+
+Terraform has compared your real infrastructure against your configuration
+and found no differences, so no changes are needed.

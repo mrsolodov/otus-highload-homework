@@ -1,0 +1,15 @@
+﻿SSH_OK
+status: done
+active
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <title>OTUS Terraform</title>
+  </head>
+  <body>
+    <h1>otus-terraform-web-1</h1>
+    <p>╨Т╨╕╤А╤В╤Г╨░╨╗╤М╨╜╨░╤П ╨╝╨░╤И╨╕╨╜╨░ ╤Б╨╛╨╖╨┤╨░╨╜╨░ ╤Б ╨┐╨╛╨╝╨╛╤Й╤М╤О Terraform.</p>
+    <p>Nginx ╨╜╨░╤Б╤В╤А╨╛╨╡╨╜ ╤З╨╡╤А╨╡╨╖ cloud-init.</p>
+  </body>
+</html>
