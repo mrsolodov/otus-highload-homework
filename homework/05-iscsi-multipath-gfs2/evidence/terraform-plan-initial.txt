@@ -1,0 +1,546 @@
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # yandex_compute_disk.gfs_lun will be created
+  + resource "yandex_compute_disk" "gfs_lun" {
+      + block_size  = 4096
+      + created_at  = (known after apply)
+      + folder_id   = (known after apply)
+      + id          = (known after apply)
+      + labels      = {
+          + "homework" = "gfs2"
+          + "project"  = "otus-highload"
+        }
+      + name        = "otus-gfs2-lun"
+      + product_ids = (known after apply)
+      + size        = 10
+      + status      = (known after apply)
+      + type        = "network-ssd"
+      + zone        = "ru-central1-d"
+
+      + disk_placement_policy (known after apply)
+
+      + hardware_generation (known after apply)
+    }
+
+  # yandex_compute_instance.gfs_node["gfs1"] will be created
+  + resource "yandex_compute_instance" "gfs_node" {
+      + allow_stopping_for_update = true
+      + created_at                = (known after apply)
+      + folder_id                 = (known after apply)
+      + fqdn                      = (known after apply)
+      + gpu_cluster_id            = (known after apply)
+      + hardware_generation       = (known after apply)
+      + hostname                  = "gfs1"
+      + id                        = (known after apply)
+      + labels                    = {
+          + "homework" = "gfs2"
+          + "project"  = "otus-highload"
+          + "role"     = "gfs2-node"
+        }
+      + maintenance_grace_period  = (known after apply)
+      + maintenance_policy        = (known after apply)
+      + metadata                  = {
+          + "enable-oslogin"     = "false"
+          + "serial-port-enable" = "0"
+          + "ssh-keys"           = <<-EOT
+                ubuntu:ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDEQgD/B2wWRHjJ499JxygSO3h5XFFi1EVEm/XVWL94y otus-highload
+            EOT
+          + "user-data"          = <<-EOT
+                #cloud-config
+                package_update: false
+                timezone: Europe/Moscow
+
+                runcmd:
+                  - [systemctl, enable, --now, systemd-timesyncd]
+            EOT
+        }
+      + name                      = "gfs1"
+      + network_acceleration_type = "standard"
+      + platform_id               = "standard-v3"
+      + reserved_instance_pool_id = (known after apply)
+      + status                    = (known after apply)
+      + zone                      = "ru-central1-d"
+
+      + boot_disk {
+          + auto_delete = true
+          + device_name = (known after apply)
+          + disk_id     = (known after apply)
+          + mode        = (known after apply)
+
+          + initialize_params {
+              + block_size  = (known after apply)
+              + description = (known after apply)
+              + image_id    = "fd8luhgf9o8h5vli509b"
+              + name        = (known after apply)
+              + size        = 10
+              + snapshot_id = (known after apply)
+              + type        = "network-hdd"
+            }
+        }
+
+      + metadata_options (known after apply)
+
+      + network_interface {
+          + index              = 0
+          + ip_address         = "10.50.1.21"
+          + ipv4               = true
+          + ipv6               = (known after apply)
+          + ipv6_address       = (known after apply)
+          + mac_address        = (known after apply)
+          + nat                = true
+          + nat_ip_address     = (known after apply)
+          + nat_ip_version     = (known after apply)
+          + security_group_ids = (known after apply)
+          + subnet_id          = (known after apply)
+        }
+      + network_interface {
+          + index              = 1
+          + ip_address         = "10.50.2.21"
+          + ipv4               = true
+          + ipv6               = (known after apply)
+          + ipv6_address       = (known after apply)
+          + mac_address        = (known after apply)
+          + nat                = false
+          + nat_ip_address     = (known after apply)
+          + nat_ip_version     = (known after apply)
+          + security_group_ids = (known after apply)
+          + subnet_id          = (known after apply)
+        }
+
+      + placement_policy (known after apply)
+
+      + resources {
+          + core_fraction = 20
+          + cores         = 2
+          + memory        = 2
+        }
+
+      + scheduling_policy (known after apply)
+    }
+
+  # yandex_compute_instance.gfs_node["gfs2"] will be created
+  + resource "yandex_compute_instance" "gfs_node" {
+      + allow_stopping_for_update = true
+      + created_at                = (known after apply)
+      + folder_id                 = (known after apply)
+      + fqdn                      = (known after apply)
+      + gpu_cluster_id            = (known after apply)
+      + hardware_generation       = (known after apply)
+      + hostname                  = "gfs2"
+      + id                        = (known after apply)
+      + labels                    = {
+          + "homework" = "gfs2"
+          + "project"  = "otus-highload"
+          + "role"     = "gfs2-node"
+        }
+      + maintenance_grace_period  = (known after apply)
+      + maintenance_policy        = (known after apply)
+      + metadata                  = {
+          + "enable-oslogin"     = "false"
+          + "serial-port-enable" = "0"
+          + "ssh-keys"           = <<-EOT
+                ubuntu:ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDEQgD/B2wWRHjJ499JxygSO3h5XFFi1EVEm/XVWL94y otus-highload
+            EOT
+          + "user-data"          = <<-EOT
+                #cloud-config
+                package_update: false
+                timezone: Europe/Moscow
+
+                runcmd:
+                  - [systemctl, enable, --now, systemd-timesyncd]
+            EOT
+        }
+      + name                      = "gfs2"
+      + network_acceleration_type = "standard"
+      + platform_id               = "standard-v3"
+      + reserved_instance_pool_id = (known after apply)
+      + status                    = (known after apply)
+      + zone                      = "ru-central1-d"
+
+      + boot_disk {
+          + auto_delete = true
+          + device_name = (known after apply)
+          + disk_id     = (known after apply)
+          + mode        = (known after apply)
+
+          + initialize_params {
+              + block_size  = (known after apply)
+              + description = (known after apply)
+              + image_id    = "fd8luhgf9o8h5vli509b"
+              + name        = (known after apply)
+              + size        = 10
+              + snapshot_id = (known after apply)
+              + type        = "network-hdd"
+            }
+        }
+
+      + metadata_options (known after apply)
+
+      + network_interface {
+          + index              = 0
+          + ip_address         = "10.50.1.22"
+          + ipv4               = true
+          + ipv6               = (known after apply)
+          + ipv6_address       = (known after apply)
+          + mac_address        = (known after apply)
+          + nat                = true
+          + nat_ip_address     = (known after apply)
+          + nat_ip_version     = (known after apply)
+          + security_group_ids = (known after apply)
+          + subnet_id          = (known after apply)
+        }
+      + network_interface {
+          + index              = 1
+          + ip_address         = "10.50.2.22"
+          + ipv4               = true
+          + ipv6               = (known after apply)
+          + ipv6_address       = (known after apply)
+          + mac_address        = (known after apply)
+          + nat                = false
+          + nat_ip_address     = (known after apply)
+          + nat_ip_version     = (known after apply)
+          + security_group_ids = (known after apply)
+          + subnet_id          = (known after apply)
+        }
+
+      + placement_policy (known after apply)
+
+      + resources {
+          + core_fraction = 20
+          + cores         = 2
+          + memory        = 2
+        }
+
+      + scheduling_policy (known after apply)
+    }
+
+  # yandex_compute_instance.gfs_node["gfs3"] will be created
+  + resource "yandex_compute_instance" "gfs_node" {
+      + allow_stopping_for_update = true
+      + created_at                = (known after apply)
+      + folder_id                 = (known after apply)
+      + fqdn                      = (known after apply)
+      + gpu_cluster_id            = (known after apply)
+      + hardware_generation       = (known after apply)
+      + hostname                  = "gfs3"
+      + id                        = (known after apply)
+      + labels                    = {
+          + "homework" = "gfs2"
+          + "project"  = "otus-highload"
+          + "role"     = "gfs2-node"
+        }
+      + maintenance_grace_period  = (known after apply)
+      + maintenance_policy        = (known after apply)
+      + metadata                  = {
+          + "enable-oslogin"     = "false"
+          + "serial-port-enable" = "0"
+          + "ssh-keys"           = <<-EOT
+                ubuntu:ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDEQgD/B2wWRHjJ499JxygSO3h5XFFi1EVEm/XVWL94y otus-highload
+            EOT
+          + "user-data"          = <<-EOT
+                #cloud-config
+                package_update: false
+                timezone: Europe/Moscow
+
+                runcmd:
+                  - [systemctl, enable, --now, systemd-timesyncd]
+            EOT
+        }
+      + name                      = "gfs3"
+      + network_acceleration_type = "standard"
+      + platform_id               = "standard-v3"
+      + reserved_instance_pool_id = (known after apply)
+      + status                    = (known after apply)
+      + zone                      = "ru-central1-d"
+
+      + boot_disk {
+          + auto_delete = true
+          + device_name = (known after apply)
+          + disk_id     = (known after apply)
+          + mode        = (known after apply)
+
+          + initialize_params {
+              + block_size  = (known after apply)
+              + description = (known after apply)
+              + image_id    = "fd8luhgf9o8h5vli509b"
+              + name        = (known after apply)
+              + size        = 10
+              + snapshot_id = (known after apply)
+              + type        = "network-hdd"
+            }
+        }
+
+      + metadata_options (known after apply)
+
+      + network_interface {
+          + index              = 0
+          + ip_address         = "10.50.1.23"
+          + ipv4               = true
+          + ipv6               = (known after apply)
+          + ipv6_address       = (known after apply)
+          + mac_address        = (known after apply)
+          + nat                = true
+          + nat_ip_address     = (known after apply)
+          + nat_ip_version     = (known after apply)
+          + security_group_ids = (known after apply)
+          + subnet_id          = (known after apply)
+        }
+      + network_interface {
+          + index              = 1
+          + ip_address         = "10.50.2.23"
+          + ipv4               = true
+          + ipv6               = (known after apply)
+          + ipv6_address       = (known after apply)
+          + mac_address        = (known after apply)
+          + nat                = false
+          + nat_ip_address     = (known after apply)
+          + nat_ip_version     = (known after apply)
+          + security_group_ids = (known after apply)
+          + subnet_id          = (known after apply)
+        }
+
+      + placement_policy (known after apply)
+
+      + resources {
+          + core_fraction = 20
+          + cores         = 2
+          + memory        = 2
+        }
+
+      + scheduling_policy (known after apply)
+    }
+
+  # yandex_compute_instance.iscsi_target will be created
+  + resource "yandex_compute_instance" "iscsi_target" {
+      + allow_stopping_for_update = true
+      + created_at                = (known after apply)
+      + folder_id                 = (known after apply)
+      + fqdn                      = (known after apply)
+      + gpu_cluster_id            = (known after apply)
+      + hardware_generation       = (known after apply)
+      + hostname                  = "gfs-target"
+      + id                        = (known after apply)
+      + labels                    = {
+          + "homework" = "gfs2"
+          + "project"  = "otus-highload"
+          + "role"     = "iscsi-target"
+        }
+      + maintenance_grace_period  = (known after apply)
+      + maintenance_policy        = (known after apply)
+      + metadata                  = {
+          + "enable-oslogin"     = "false"
+          + "serial-port-enable" = "0"
+          + "ssh-keys"           = <<-EOT
+                ubuntu:ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDEQgD/B2wWRHjJ499JxygSO3h5XFFi1EVEm/XVWL94y otus-highload
+            EOT
+          + "user-data"          = <<-EOT
+                #cloud-config
+                package_update: false
+                timezone: Europe/Moscow
+
+                runcmd:
+                  - [systemctl, enable, --now, systemd-timesyncd]
+            EOT
+        }
+      + name                      = "gfs-target"
+      + network_acceleration_type = "standard"
+      + platform_id               = "standard-v3"
+      + reserved_instance_pool_id = (known after apply)
+      + status                    = (known after apply)
+      + zone                      = "ru-central1-d"
+
+      + boot_disk {
+          + auto_delete = true
+          + device_name = (known after apply)
+          + disk_id     = (known after apply)
+          + mode        = (known after apply)
+
+          + initialize_params {
+              + block_size  = (known after apply)
+              + description = (known after apply)
+              + image_id    = "fd8luhgf9o8h5vli509b"
+              + name        = (known after apply)
+              + size        = 10
+              + snapshot_id = (known after apply)
+              + type        = "network-hdd"
+            }
+        }
+
+      + metadata_options (known after apply)
+
+      + network_interface {
+          + index              = 0
+          + ip_address         = "10.50.1.10"
+          + ipv4               = true
+          + ipv6               = (known after apply)
+          + ipv6_address       = (known after apply)
+          + mac_address        = (known after apply)
+          + nat                = true
+          + nat_ip_address     = (known after apply)
+          + nat_ip_version     = (known after apply)
+          + security_group_ids = (known after apply)
+          + subnet_id          = (known after apply)
+        }
+      + network_interface {
+          + index              = 1
+          + ip_address         = "10.50.2.10"
+          + ipv4               = true
+          + ipv6               = (known after apply)
+          + ipv6_address       = (known after apply)
+          + mac_address        = (known after apply)
+          + nat                = false
+          + nat_ip_address     = (known after apply)
+          + nat_ip_version     = (known after apply)
+          + security_group_ids = (known after apply)
+          + subnet_id          = (known after apply)
+        }
+
+      + placement_policy (known after apply)
+
+      + resources {
+          + core_fraction = 20
+          + cores         = 2
+          + memory        = 2
+        }
+
+      + scheduling_policy (known after apply)
+
+      + secondary_disk {
+          + auto_delete = false
+          + device_name = "gfs-lun"
+          + disk_id     = (known after apply)
+          + mode        = "READ_WRITE"
+        }
+    }
+
+  # yandex_vpc_network.gfs2 will be created
+  + resource "yandex_vpc_network" "gfs2" {
+      + created_at                = (known after apply)
+      + default_security_group_id = (known after apply)
+      + folder_id                 = (known after apply)
+      + id                        = (known after apply)
+      + labels                    = (known after apply)
+      + name                      = "otus-gfs2-network"
+      + subnet_ids                = (known after apply)
+    }
+
+  # yandex_vpc_security_group.gfs2 will be created
+  + resource "yandex_vpc_security_group" "gfs2" {
+      + created_at  = (known after apply)
+      + description = "Security group for the OTUS iSCSI and GFS2 laboratory"
+      + folder_id   = (known after apply)
+      + id          = (known after apply)
+      + labels      = (known after apply)
+      + name        = "otus-gfs2-sg"
+      + network_id  = (known after apply)
+      + status      = (known after apply)
+
+      + egress {
+          + description       = "Outbound access"
+          + from_port         = -1
+          + id                = (known after apply)
+          + labels            = (known after apply)
+          + port              = -1
+          + protocol          = "ANY"
+          + to_port           = -1
+          + v4_cidr_blocks    = [
+              + "0.0.0.0/0",
+            ]
+          + v6_cidr_blocks    = []
+            # (2 unchanged attributes hidden)
+        }
+
+      + ingress {
+          + description       = "Internal cluster and iSCSI traffic"
+          + from_port         = -1
+          + id                = (known after apply)
+          + labels            = (known after apply)
+          + port              = -1
+          + protocol          = "ANY"
+          + to_port           = -1
+          + v4_cidr_blocks    = [
+              + "10.50.0.0/16",
+            ]
+          + v6_cidr_blocks    = []
+            # (2 unchanged attributes hidden)
+        }
+      + ingress {
+          + description       = "SSH from current public IP"
+          + from_port         = -1
+          + id                = (known after apply)
+          + labels            = (known after apply)
+          + port              = 22
+          + protocol          = "TCP"
+          + to_port           = -1
+          + v4_cidr_blocks    = [
+              + "79.127.128.118/32",
+            ]
+          + v6_cidr_blocks    = []
+            # (2 unchanged attributes hidden)
+        }
+    }
+
+  # yandex_vpc_subnet.path_a will be created
+  + resource "yandex_vpc_subnet" "path_a" {
+      + created_at     = (known after apply)
+      + folder_id      = (known after apply)
+      + id             = (known after apply)
+      + labels         = (known after apply)
+      + name           = "otus-gfs2-path-a"
+      + network_id     = (known after apply)
+      + v4_cidr_blocks = [
+          + "10.50.1.0/24",
+        ]
+      + v6_cidr_blocks = (known after apply)
+      + zone           = "ru-central1-d"
+    }
+
+  # yandex_vpc_subnet.path_b will be created
+  + resource "yandex_vpc_subnet" "path_b" {
+      + created_at     = (known after apply)
+      + folder_id      = (known after apply)
+      + id             = (known after apply)
+      + labels         = (known after apply)
+      + name           = "otus-gfs2-path-b"
+      + network_id     = (known after apply)
+      + v4_cidr_blocks = [
+          + "10.50.2.0/24",
+        ]
+      + v6_cidr_blocks = (known after apply)
+      + zone           = "ru-central1-d"
+    }
+
+Plan: 9 to add, 0 to change, 0 to destroy.
+
+Changes to Outputs:
+  + ansible_inventory        = (known after apply)
+  + estimated_running_vms    = 4
+  + gfs_node_private_ips     = {
+      + gfs1 = {
+          + path_a = "10.50.1.21"
+          + path_b = "10.50.2.21"
+        }
+      + gfs2 = {
+          + path_a = "10.50.1.22"
+          + path_b = "10.50.2.22"
+        }
+      + gfs3 = {
+          + path_a = "10.50.1.23"
+          + path_b = "10.50.2.23"
+        }
+    }
+  + gfs_node_public_ips      = {
+      + gfs1 = (known after apply)
+      + gfs2 = (known after apply)
+      + gfs3 = (known after apply)
+    }
+  + iscsi_target_private_ips = {
+      + path_a = "10.50.1.10"
+      + path_b = "10.50.2.10"
+    }
+  + iscsi_target_public_ip   = (known after apply)

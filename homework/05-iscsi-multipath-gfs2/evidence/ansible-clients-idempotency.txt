@@ -1,0 +1,275 @@
+
+PLAY [Configure iSCSI initiators and multipath] ********************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [gfs3]
+ok: [gfs1]
+ok: [gfs2]
+
+TASK [gfs2_cluster : Install storage and cluster packages] *********************
+ok: [gfs3]
+ok: [gfs1]
+ok: [gfs2]
+
+TASK [gfs2_cluster : Enable iSCSI daemon] **************************************
+ok: [gfs3]
+ok: [gfs1]
+ok: [gfs2]
+
+TASK [gfs2_cluster : Enable automatic iSCSI login service] *********************
+ok: [gfs3]
+ok: [gfs2]
+ok: [gfs1]
+
+TASK [gfs2_cluster : Install persistent cross-zone routes] *********************
+skipping: [gfs2]
+ok: [gfs3]
+ok: [gfs1]
+
+TASK [gfs2_cluster : Enable persistent cross-zone routes] **********************
+skipping: [gfs2]
+ok: [gfs3]
+ok: [gfs1]
+
+TASK [gfs2_cluster : Configure multipath] **************************************
+ok: [gfs3]
+ok: [gfs1]
+ok: [gfs2]
+
+TASK [gfs2_cluster : Validate multipath configuration] *************************
+ok: [gfs3]
+ok: [gfs1]
+ok: [gfs2]
+
+TASK [gfs2_cluster : Apply multipath configuration before iSCSI login] *********
+
+TASK [gfs2_cluster : Apply multipath configuration before iSCSI login] *********
+
+TASK [gfs2_cluster : Apply multipath configuration before iSCSI login] *********
+
+TASK [gfs2_cluster : Discover iSCSI target through both portals] ***************
+ok: [gfs1] => (item=10.50.11.10)
+ok: [gfs3] => (item=10.50.11.10)
+ok: [gfs2] => (item=10.50.11.10)
+ok: [gfs3] => (item=10.50.12.10)
+ok: [gfs1] => (item=10.50.12.10)
+ok: [gfs2] => (item=10.50.12.10)
+
+TASK [gfs2_cluster : Configure automatic iSCSI login] **************************
+ok: [gfs3] => (item=10.50.11.10)
+ok: [gfs2] => (item=10.50.11.10)
+ok: [gfs1] => (item=10.50.11.10)
+ok: [gfs3] => (item=10.50.12.10)
+ok: [gfs1] => (item=10.50.12.10)
+ok: [gfs2] => (item=10.50.12.10)
+
+TASK [gfs2_cluster : Check existing iSCSI sessions] ****************************
+ok: [gfs1] => (item=10.50.11.10)
+ok: [gfs3] => (item=10.50.11.10)
+ok: [gfs2] => (item=10.50.11.10)
+ok: [gfs3] => (item=10.50.12.10)
+ok: [gfs1] => (item=10.50.12.10)
+ok: [gfs2] => (item=10.50.12.10)
+
+TASK [gfs2_cluster : Login through missing iSCSI paths] ************************
+skipping: [gfs1] => (item={'changed': False, 'stdout': 'tcp: [1] 10.50.11.10:3260,1 iqn.2026-10.ru.otus:gfs-target (non-flash)', 'stderr': '', 'rc': 0, 'cmd': 'iscsiadm -m session 2>/dev/null | grep -F "10.50.11.10:3260"', 'start': '2026-10-13 00:23:23.671755', 'end': '2026-10-13 00:23:23.679587', 'delta': '0:00:00.007832', 'msg': '', 'invocation': {'module_args': {'_raw_params': 'iscsiadm -m session 2>/dev/null | grep -F "10.50.11.10:3260"', '_uses_shell': True, 'expand_argument_vars': True, 'stdin_add_newline': True, 'strip_empty_ends': True, 'argv': None, 'chdir': None, 'executable': None, 'creates': None, 'removes': None, 'stdin': None}}, 'stdout_lines': ['tcp: [1] 10.50.11.10:3260,1 iqn.2026-10.ru.otus:gfs-target (non-flash)'], 'stderr_lines': [], 'failed': False, 'failed_when_result': False, 'item': '10.50.11.10', 'ansible_loop_var': 'item'})
+skipping: [gfs1] => (item={'changed': False, 'stdout': 'tcp: [2] 10.50.12.10:3260,1 iqn.2026-10.ru.otus:gfs-target (non-flash)', 'stderr': '', 'rc': 0, 'cmd': 'iscsiadm -m session 2>/dev/null | grep -F "10.50.12.10:3260"', 'start': '2026-10-13 00:23:24.124250', 'end': '2026-10-13 00:23:24.131086', 'delta': '0:00:00.006836', 'msg': '', 'invocation': {'module_args': {'_raw_params': 'iscsiadm -m session 2>/dev/null | grep -F "10.50.12.10:3260"', '_uses_shell': True, 'expand_argument_vars': True, 'stdin_add_newline': True, 'strip_empty_ends': True, 'argv': None, 'chdir': None, 'executable': None, 'creates': None, 'removes': None, 'stdin': None}}, 'stdout_lines': ['tcp: [2] 10.50.12.10:3260,1 iqn.2026-10.ru.otus:gfs-target (non-flash)'], 'stderr_lines': [], 'failed': False, 'failed_when_result': False, 'item': '10.50.12.10', 'ansible_loop_var': 'item'})
+skipping: [gfs2] => (item={'changed': False, 'stdout': 'tcp: [1] 10.50.11.10:3260,1 iqn.2026-10.ru.otus:gfs-target (non-flash)', 'stderr': '', 'rc': 0, 'cmd': 'iscsiadm -m session 2>/dev/null | grep -F "10.50.11.10:3260"', 'start': '2026-10-13 00:23:23.699755', 'end': '2026-10-13 00:23:23.706280', 'delta': '0:00:00.006525', 'msg': '', 'invocation': {'module_args': {'_raw_params': 'iscsiadm -m session 2>/dev/null | grep -F "10.50.11.10:3260"', '_uses_shell': True, 'expand_argument_vars': True, 'stdin_add_newline': True, 'strip_empty_ends': True, 'argv': None, 'chdir': None, 'executable': None, 'creates': None, 'removes': None, 'stdin': None}}, 'stdout_lines': ['tcp: [1] 10.50.11.10:3260,1 iqn.2026-10.ru.otus:gfs-target (non-flash)'], 'stderr_lines': [], 'failed': False, 'failed_when_result': False, 'item': '10.50.11.10', 'ansible_loop_var': 'item'})
+skipping: [gfs2] => (item={'changed': False, 'stdout': 'tcp: [2] 10.50.12.10:3260,1 iqn.2026-10.ru.otus:gfs-target (non-flash)', 'stderr': '', 'rc': 0, 'cmd': 'iscsiadm -m session 2>/dev/null | grep -F "10.50.12.10:3260"', 'start': '2026-10-13 00:23:24.134515', 'end': '2026-10-13 00:23:24.142035', 'delta': '0:00:00.007520', 'msg': '', 'invocation': {'module_args': {'_raw_params': 'iscsiadm -m session 2>/dev/null | grep -F "10.50.12.10:3260"', '_uses_shell': True, 'expand_argument_vars': True, 'stdin_add_newline': True, 'strip_empty_ends': True, 'argv': None, 'chdir': None, 'executable': None, 'creates': None, 'removes': None, 'stdin': None}}, 'stdout_lines': ['tcp: [2] 10.50.12.10:3260,1 iqn.2026-10.ru.otus:gfs-target (non-flash)'], 'stderr_lines': [], 'failed': False, 'failed_when_result': False, 'item': '10.50.12.10', 'ansible_loop_var': 'item'})
+skipping: [gfs1]
+skipping: [gfs2]
+skipping: [gfs3] => (item={'changed': False, 'stdout': 'tcp: [1] 10.50.11.10:3260,1 iqn.2026-10.ru.otus:gfs-target (non-flash)', 'stderr': '', 'rc': 0, 'cmd': 'iscsiadm -m session 2>/dev/null | grep -F "10.50.11.10:3260"', 'start': '2026-10-13 00:23:23.682435', 'end': '2026-10-13 00:23:23.688203', 'delta': '0:00:00.005768', 'msg': '', 'invocation': {'module_args': {'_raw_params': 'iscsiadm -m session 2>/dev/null | grep -F "10.50.11.10:3260"', '_uses_shell': True, 'expand_argument_vars': True, 'stdin_add_newline': True, 'strip_empty_ends': True, 'argv': None, 'chdir': None, 'executable': None, 'creates': None, 'removes': None, 'stdin': None}}, 'stdout_lines': ['tcp: [1] 10.50.11.10:3260,1 iqn.2026-10.ru.otus:gfs-target (non-flash)'], 'stderr_lines': [], 'failed': False, 'failed_when_result': False, 'item': '10.50.11.10', 'ansible_loop_var': 'item'})
+skipping: [gfs3] => (item={'changed': False, 'stdout': 'tcp: [2] 10.50.12.10:3260,1 iqn.2026-10.ru.otus:gfs-target (non-flash)', 'stderr': '', 'rc': 0, 'cmd': 'iscsiadm -m session 2>/dev/null | grep -F "10.50.12.10:3260"', 'start': '2026-10-13 00:23:24.110152', 'end': '2026-10-13 00:23:24.115981', 'delta': '0:00:00.005829', 'msg': '', 'invocation': {'module_args': {'_raw_params': 'iscsiadm -m session 2>/dev/null | grep -F "10.50.12.10:3260"', '_uses_shell': True, 'expand_argument_vars': True, 'stdin_add_newline': True, 'strip_empty_ends': True, 'argv': None, 'chdir': None, 'executable': None, 'creates': None, 'removes': None, 'stdin': None}}, 'stdout_lines': ['tcp: [2] 10.50.12.10:3260,1 iqn.2026-10.ru.otus:gfs-target (non-flash)'], 'stderr_lines': [], 'failed': False, 'failed_when_result': False, 'item': '10.50.12.10', 'ansible_loop_var': 'item'})
+skipping: [gfs3]
+
+TASK [gfs2_cluster : Wait for iSCSI devices] ***********************************
+Pausing for 5 seconds
+(ctrl+C then 'C' = continue early, ctrl+C then 'A' = abort)
+ok: [gfs1]
+
+TASK [gfs2_cluster : Reload multipath maps] ************************************
+ok: [gfs1]
+ok: [gfs3]
+ok: [gfs2]
+
+TASK [gfs2_cluster : Ensure multipath service is enabled] **********************
+ok: [gfs1]
+ok: [gfs3]
+ok: [gfs2]
+
+TASK [gfs2_cluster : Install Corosync configuration] ***************************
+ok: [gfs1]
+ok: [gfs3]
+ok: [gfs2]
+
+TASK [gfs2_cluster : Check Corosync authentication key on gfs1] ****************
+ok: [gfs1]
+
+TASK [gfs2_cluster : Generate Corosync authentication key on gfs1] *************
+skipping: [gfs1]
+
+TASK [gfs2_cluster : Read Corosync authentication key from gfs1] ***************
+ok: [gfs1]
+
+TASK [gfs2_cluster : Distribute the same Corosync authentication key] **********
+ok: [gfs1]
+ok: [gfs3]
+ok: [gfs2]
+
+TASK [gfs2_cluster : Enable lvmlockd in LVM configuration] *********************
+ok: [gfs1]
+ok: [gfs3]
+ok: [gfs2]
+
+TASK [gfs2_cluster : Apply Corosync configuration] *****************************
+
+TASK [gfs2_cluster : Apply Corosync configuration] *****************************
+
+TASK [gfs2_cluster : Apply Corosync configuration] *****************************
+
+TASK [gfs2_cluster : Wait until the cluster becomes quorate] *******************
+ok: [gfs3]
+ok: [gfs2]
+ok: [gfs1]
+
+TASK [gfs2_cluster : Restart DLM after changing Corosync configuration] ********
+skipping: [gfs1]
+skipping: [gfs2]
+skipping: [gfs3]
+
+TASK [gfs2_cluster : Ensure DLM is running] ************************************
+ok: [gfs1]
+ok: [gfs3]
+ok: [gfs2]
+
+TASK [gfs2_cluster : Start lvmlockd] *******************************************
+ok: [gfs1]
+ok: [gfs3]
+ok: [gfs2]
+
+TASK [gfs2_cluster : Check shared volume group on gfs1] ************************
+ok: [gfs1]
+
+TASK [gfs2_cluster : Create shared volume group] *******************************
+skipping: [gfs1]
+
+TASK [gfs2_cluster : Rescan LVM metadata] **************************************
+ok: [gfs1]
+ok: [gfs3]
+ok: [gfs2]
+
+TASK [gfs2_cluster : Wait until shared volume group is visible] ****************
+ok: [gfs1]
+ok: [gfs2]
+ok: [gfs3]
+
+TASK [gfs2_cluster : Check shared VG lockspace] ********************************
+ok: [gfs1]
+ok: [gfs3]
+ok: [gfs2]
+
+TASK [gfs2_cluster : Start shared VG lockspace] ********************************
+skipping: [gfs1]
+skipping: [gfs2]
+skipping: [gfs3]
+
+TASK [gfs2_cluster : Wait until shared VG lockspace is ready] ******************
+ok: [gfs1]
+ok: [gfs3]
+ok: [gfs2]
+
+TASK [gfs2_cluster : Check logical volume on gfs1] *****************************
+ok: [gfs1]
+
+TASK [gfs2_cluster : Create logical volume] ************************************
+skipping: [gfs1]
+
+TASK [gfs2_cluster : Rescan LVM metadata after creating LV] ********************
+ok: [gfs1]
+ok: [gfs2]
+ok: [gfs3]
+
+TASK [gfs2_cluster : Wait until logical volume is visible] *********************
+ok: [gfs1]
+ok: [gfs3]
+ok: [gfs2]
+
+TASK [gfs2_cluster : Check whether logical volume device is active on gfs1] ****
+ok: [gfs1]
+
+TASK [gfs2_cluster : Activate logical volume exclusively for formatting] *******
+skipping: [gfs1]
+
+TASK [gfs2_cluster : Check filesystem type] ************************************
+ok: [gfs1]
+
+TASK [gfs2_cluster : Create GFS2 filesystem with three journals] ***************
+skipping: [gfs1]
+
+TASK [gfs2_cluster : Deactivate exclusive LV after formatting] *****************
+skipping: [gfs1]
+
+TASK [gfs2_cluster : Activate GFS2 logical volume in shared mode] **************
+ok: [gfs1]
+ok: [gfs2]
+ok: [gfs3]
+
+TASK [gfs2_cluster : Create GFS2 mount directory] ******************************
+ok: [gfs1]
+ok: [gfs3]
+ok: [gfs2]
+
+TASK [gfs2_cluster : Install GFS2 activation service] **************************
+ok: [gfs1]
+ok: [gfs3]
+ok: [gfs2]
+
+TASK [gfs2_cluster : Enable GFS2 activation service] ***************************
+ok: [gfs1]
+ok: [gfs3]
+ok: [gfs2]
+
+TASK [gfs2_cluster : Add GFS2 filesystem to fstab] *****************************
+ok: [gfs1]
+ok: [gfs3]
+ok: [gfs2]
+
+TASK [gfs2_cluster : Install kernel modules required by GFS2] ******************
+ok: [gfs1]
+ok: [gfs3]
+ok: [gfs2]
+
+TASK [gfs2_cluster : Configure GFS2 module loading at boot] ********************
+ok: [gfs3]
+ok: [gfs1]
+ok: [gfs2]
+
+TASK [gfs2_cluster : Load GFS2 kernel module] **********************************
+ok: [gfs1]
+ok: [gfs3]
+ok: [gfs2]
+
+TASK [gfs2_cluster : Verify that kernel supports GFS2] *************************
+ok: [gfs1]
+ok: [gfs3]
+ok: [gfs2]
+
+TASK [gfs2_cluster : Check GFS2 mount] *****************************************
+ok: [gfs1]
+ok: [gfs3]
+ok: [gfs2]
+
+TASK [gfs2_cluster : Mount GFS2 filesystem] ************************************
+skipping: [gfs1]
+skipping: [gfs2]
+skipping: [gfs3]
+
+TASK [gfs2_cluster : Create test file from each cluster node] ******************
+ok: [gfs1]
+ok: [gfs3]
+ok: [gfs2]
+
+PLAY RECAP *********************************************************************
+gfs1                       : ok=43   changed=0    unreachable=0    failed=0    skipped=10   rescued=0    ignored=0
+gfs2                       : ok=34   changed=0    unreachable=0    failed=0    skipped=6    rescued=0    ignored=0
+gfs3                       : ok=36   changed=0    unreachable=0    failed=0    skipped=4    rescued=0    ignored=0

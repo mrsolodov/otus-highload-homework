@@ -1,0 +1,159 @@
+---
+- name: Verify iSCSI multipath failover
+  hosts: gfs1
+  become: true
+  gather_facts: false
+
+  vars:
+    iscsi_target_iqn: "iqn.2026-10.ru.otus:gfs-target"
+    disabled_portal: "10.50.11.10:3260"
+
+  tasks:
+    - name: Test loss of one iSCSI path
+      block:
+        - name: Show storage state before failover
+          ansible.builtin.shell: |
+            set -o pipefail
+
+            echo "=== ISCSI SESSIONS BEFORE ==="
+            iscsiadm -m session
+
+            echo "=== MULTIPATH BEFORE ==="
+            multipath -ll
+
+            echo "=== GFS2 BEFORE ==="
+            findmnt /mnt/gfs2
+          args:
+            executable: /bin/bash
+          register: storage_before
+          changed_when: false
+
+        - name: Print storage state before failover
+          ansible.builtin.debug:
+            var: storage_before.stdout_lines
+
+        - name: Disconnect path A on gfs1
+          ansible.builtin.command:
+            argv:
+              - iscsiadm
+              - -m
+              - node
+              - -T
+              - "{{ iscsi_target_iqn }}"
+              - -p
+              - "{{ disabled_portal }}"
+              - --logout
+          changed_when: true
+
+        - name: Wait for multipath to detect disconnected path
+          ansible.builtin.pause:
+            seconds: 5
+
+        - name: Verify GFS2 through the remaining path
+          ansible.builtin.shell: |
+            set -euo pipefail
+
+            echo "=== ISCSI SESSIONS WITH ONE PATH ==="
+            iscsiadm -m session
+
+            echo "=== MULTIPATH WITH ONE PATH ==="
+            multipath -ll
+
+            echo "=== GFS2 MOUNT WITH ONE PATH ==="
+            findmnt -n -t gfs2 /mnt/gfs2
+
+            session_count="$(
+              iscsiadm -m session |
+              grep -c '{{ iscsi_target_iqn }}'
+            )"
+
+            active_path_count="$(
+              multipath -ll |
+              grep -c 'active ready running'
+            )"
+
+            echo "Sessions to target: ${session_count}"
+            echo "Active multipath paths: ${active_path_count}"
+
+            test "${session_count}" -eq 1
+            test "${active_path_count}" -ge 1
+
+            printf \
+              'File written on gfs1 while one iSCSI path was disconnected.\n' \
+              > /mnt/gfs2/multipath-failover-gfs1.txt
+
+            sync
+
+            echo "=== TEST FILE ==="
+            cat /mnt/gfs2/multipath-failover-gfs1.txt
+          args:
+            executable: /bin/bash
+          register: single_path_test
+          changed_when: true
+
+        - name: Print single-path test result
+          ansible.builtin.debug:
+            var: single_path_test.stdout_lines
+
+      always:
+        - name: Restore path A on gfs1
+          ansible.builtin.command:
+            argv:
+              - iscsiadm
+              - -m
+              - node
+              - -T
+              - "{{ iscsi_target_iqn }}"
+              - -p
+              - "{{ disabled_portal }}"
+              - --login
+          register: path_restore
+          changed_when: true
+          failed_when:
+            - path_restore.rc != 0
+            - "'already present' not in path_restore.stdout"
+            - "'already present' not in path_restore.stderr"
+
+        - name: Wait for restored path
+          ansible.builtin.pause:
+            seconds: 7
+
+    - name: Verify that both paths are restored
+      ansible.builtin.shell: |
+        set -o pipefail
+
+        echo "=== ISCSI SESSIONS AFTER RESTORE ==="
+        iscsiadm -m session
+
+        echo "=== MULTIPATH AFTER RESTORE ==="
+        multipath -ll
+
+        echo "=== GFS2 AFTER RESTORE ==="
+        findmnt /mnt/gfs2
+
+        echo "=== TEST FILE AFTER RESTORE ==="
+        cat /mnt/gfs2/multipath-failover-gfs1.txt
+
+        session_count="$(
+          iscsiadm -m session |
+          grep -c '{{ iscsi_target_iqn }}'
+        )"
+
+        active_path_count="$(
+          multipath -ll |
+          grep -c 'active ready running'
+        )"
+
+        echo "Restored sessions to target: ${session_count}"
+        echo "Restored active paths: ${active_path_count}"
+
+        test "${session_count}" -eq 2
+        test "${active_path_count}" -eq 2
+      args:
+        executable: /bin/bash
+      register: storage_after
+      changed_when: false
+
+    - name: Print final storage state
+      ansible.builtin.debug:
+        var: storage_after.stdout_lines

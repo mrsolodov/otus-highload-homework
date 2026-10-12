@@ -1,0 +1,6 @@
+#cloud-config
+package_update: false
+timezone: Europe/Moscow
+
+runcmd:
+  - [systemctl, enable, --now, systemd-timesyncd]

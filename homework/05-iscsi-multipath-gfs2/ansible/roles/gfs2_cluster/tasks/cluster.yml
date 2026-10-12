@@ -1,0 +1,83 @@
+---
+- name: Install Corosync configuration
+  ansible.builtin.template:
+    src: corosync.conf.j2
+    dest: /etc/corosync/corosync.conf
+    owner: root
+    group: root
+    mode: "0644"
+  register: corosync_config
+  notify: Restart corosync
+
+- name: Check Corosync authentication key on gfs1
+  ansible.builtin.stat:
+    path: /etc/corosync/authkey
+  delegate_to: gfs1
+  run_once: true
+  register: corosync_authkey_stat
+
+- name: Generate Corosync authentication key on gfs1
+  ansible.builtin.command:
+    argv:
+      - corosync-keygen
+      - -l
+  delegate_to: gfs1
+  run_once: true
+  when: not corosync_authkey_stat.stat.exists
+
+- name: Read Corosync authentication key from gfs1
+  ansible.builtin.slurp:
+    src: /etc/corosync/authkey
+  delegate_to: gfs1
+  run_once: true
+  register: corosync_authkey_source
+
+- name: Distribute the same Corosync authentication key
+  ansible.builtin.copy:
+    content: "{{ corosync_authkey_source.content | b64decode }}"
+    dest: /etc/corosync/authkey
+    owner: root
+    group: root
+    mode: "0400"
+  register: corosync_authkey_copy
+  notify: Restart corosync
+
+- name: Enable lvmlockd in LVM configuration
+  ansible.builtin.lineinfile:
+    path: /etc/lvm/lvm.conf
+    regexp: '^\s*#?\s*use_lvmlockd\s*='
+    line: '    use_lvmlockd = 1'
+    backup: true
+  register: lvmlockd_configuration
+
+- name: Apply Corosync configuration
+  ansible.builtin.meta: flush_handlers
+
+- name: Wait until the cluster becomes quorate
+  ansible.builtin.shell:
+    cmd: corosync-quorumtool -s | grep -q 'Quorate:.*Yes'
+  register: corosync_quorum
+  changed_when: false
+  retries: 20
+  delay: 3
+  until: corosync_quorum.rc == 0
+
+- name: Restart DLM after changing Corosync configuration
+  ansible.builtin.systemd:
+    name: dlm
+    enabled: true
+    state: restarted
+  when: corosync_config.changed or corosync_authkey_copy.changed
+
+- name: Ensure DLM is running
+  ansible.builtin.systemd:
+    name: dlm
+    enabled: true
+    state: started
+  when: not (corosync_config.changed or corosync_authkey_copy.changed)
+
+- name: Start lvmlockd
+  ansible.builtin.systemd:
+    name: lvmlockd
+    enabled: true
+    state: "{{ 'restarted' if lvmlockd_configuration.changed else 'started' }}"

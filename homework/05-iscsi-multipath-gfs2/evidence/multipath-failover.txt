@@ -1,0 +1,89 @@
+
+PLAY [Verify iSCSI multipath failover] *****************************************
+
+TASK [Show storage state before failover] **************************************
+ok: [gfs1]
+
+TASK [Print storage state before failover] *************************************
+ok: [gfs1] => {
+    "storage_before.stdout_lines": [
+        "=== ISCSI SESSIONS BEFORE ===",
+        "tcp: [1] 10.50.11.10:3260,1 iqn.2026-10.ru.otus:gfs-target (non-flash)",
+        "tcp: [2] 10.50.12.10:3260,1 iqn.2026-10.ru.otus:gfs-target (non-flash)",
+        "=== MULTIPATH BEFORE ===",
+        "mpatha (360014050a83af549213459ab44052062) dm-0 LIO-ORG,gfs_lun",
+        "size=10G features='1 queue_if_no_path' hwhandler='1 alua' wp=rw",
+        "`-+- policy='round-robin 0' prio=50 status=active",
+        "  |- 0:0:0:0 sda 8:0  active ready running",
+        "  `- 1:0:0:0 sdb 8:16 active ready running",
+        "=== GFS2 BEFORE ===",
+        "TARGET    SOURCE                      FSTYPE OPTIONS",
+        "/mnt/gfs2 /dev/mapper/vg_gfs2-lv_gfs2 gfs2   rw,noatime,rgrplvb"
+    ]
+}
+
+TASK [Disconnect path A on gfs1] ***********************************************
+changed: [gfs1]
+
+TASK [Wait for multipath to detect disconnected path] **************************
+Pausing for 5 seconds
+(ctrl+C then 'C' = continue early, ctrl+C then 'A' = abort)
+ok: [gfs1]
+
+TASK [Verify GFS2 through the remaining path] **********************************
+changed: [gfs1]
+
+TASK [Print single-path test result] *******************************************
+ok: [gfs1] => {
+    "single_path_test.stdout_lines": [
+        "=== ISCSI SESSIONS WITH ONE PATH ===",
+        "tcp: [2] 10.50.12.10:3260,1 iqn.2026-10.ru.otus:gfs-target (non-flash)",
+        "=== MULTIPATH WITH ONE PATH ===",
+        "mpatha (360014050a83af549213459ab44052062) dm-0 LIO-ORG,gfs_lun",
+        "size=10G features='1 queue_if_no_path' hwhandler='1 alua' wp=rw",
+        "`-+- policy='round-robin 0' prio=50 status=active",
+        "  `- 1:0:0:0 sdb 8:16 active ready running",
+        "=== GFS2 MOUNT WITH ONE PATH ===",
+        "/mnt/gfs2 /dev/mapper/vg_gfs2-lv_gfs2 gfs2   rw,noatime,rgrplvb",
+        "Sessions to target: 1",
+        "Active multipath paths: 1",
+        "=== TEST FILE ===",
+        "File written on gfs1 while one iSCSI path was disconnected."
+    ]
+}
+
+TASK [Restore path A on gfs1] **************************************************
+changed: [gfs1]
+
+TASK [Wait for restored path] **************************************************
+Pausing for 7 seconds
+(ctrl+C then 'C' = continue early, ctrl+C then 'A' = abort)
+ok: [gfs1]
+
+TASK [Verify that both paths are restored] *************************************
+ok: [gfs1]
+
+TASK [Print final storage state] ***********************************************
+ok: [gfs1] => {
+    "storage_after.stdout_lines": [
+        "=== ISCSI SESSIONS AFTER RESTORE ===",
+        "tcp: [2] 10.50.12.10:3260,1 iqn.2026-10.ru.otus:gfs-target (non-flash)",
+        "tcp: [3] 10.50.11.10:3260,1 iqn.2026-10.ru.otus:gfs-target (non-flash)",
+        "=== MULTIPATH AFTER RESTORE ===",
+        "mpatha (360014050a83af549213459ab44052062) dm-0 LIO-ORG,gfs_lun",
+        "size=10G features='1 queue_if_no_path' hwhandler='1 alua' wp=rw",
+        "`-+- policy='round-robin 0' prio=50 status=active",
+        "  |- 1:0:0:0 sdb 8:16 active ready running",
+        "  `- 0:0:0:0 sda 8:0  active ready running",
+        "=== GFS2 AFTER RESTORE ===",
+        "TARGET    SOURCE                      FSTYPE OPTIONS",
+        "/mnt/gfs2 /dev/mapper/vg_gfs2-lv_gfs2 gfs2   rw,noatime,rgrplvb",
+        "=== TEST FILE AFTER RESTORE ===",
+        "File written on gfs1 while one iSCSI path was disconnected.",
+        "Restored sessions to target: 2",
+        "Restored active paths: 2"
+    ]
+}
+
+PLAY RECAP *********************************************************************
+gfs1                       : ok=10   changed=3    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0

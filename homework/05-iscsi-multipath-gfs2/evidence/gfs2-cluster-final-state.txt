@@ -1,0 +1,210 @@
+gfs2 | CHANGED | rc=0 >>
+=== HOST ===
+gfs2
+=== ISCSI SESSIONS ===
+tcp: [1] 10.50.11.10:3260,1 iqn.2026-10.ru.otus:gfs-target (non-flash)
+tcp: [2] 10.50.12.10:3260,1 iqn.2026-10.ru.otus:gfs-target (non-flash)
+=== MULTIPATH ===
+mpatha (360014050a83af549213459ab44052062) dm-0 LIO-ORG,gfs_lun
+size=10G features='1 queue_if_no_path' hwhandler='1 alua' wp=rw
+`-+- policy='round-robin 0' prio=50 status=active
+  |- 0:0:0:0 sda 8:0  active ready running
+  `- 1:0:0:0 sdb 8:16 active ready running
+=== QUORUM ===
+Quorum information
+------------------
+Date:             Tue Oct 13 00:29:05 2026
+Quorum provider:  corosync_votequorum
+Nodes:            3
+Node ID:          2
+Ring ID:          1.e
+Quorate:          Yes
+
+Votequorum information
+----------------------
+Expected votes:   3
+Highest expected: 3
+Total votes:      3
+Quorum:           2
+Flags:            Quorate
+
+Membership information
+----------------------
+    Nodeid      Votes Name
+         1          1 gfs1
+         2          1 gfs2 (local)
+         3          1 gfs3
+=== CLUSTER NODES ===
+
+Membership information
+----------------------
+    Nodeid      Votes Name
+         1          1 gfs1
+         2          1 gfs2 (local)
+         3          1 gfs3
+=== SERVICES ===
+active
+active
+active
+active
+=== SHARED VG ===
+  VG      VSize   VFree LockType VLockArgs
+  vg_gfs2 <10.00g    0  dlm      1.0.0:otus_gfs2
+=== SHARED LV ===
+  LV      LSize   Attr       Devices
+  lv_gfs2 <10.00g -wi-ao---- /dev/mapper/mpatha(0)
+=== GFS2 SIGNATURE ===
+/dev/vg_gfs2/lv_gfs2: LABEL="otus_gfs2:gfsdata" UUID="fedfb9f8-43a3-4e1e-9512-0ca8ba856b4d" BLOCK_SIZE="4096" TYPE="gfs2"
+=== GFS2 MOUNT ===
+TARGET    SOURCE                      FSTYPE OPTIONS
+/mnt/gfs2 /dev/mapper/vg_gfs2-lv_gfs2 gfs2   rw,noatime,rgrplvb
+=== SHARED FILES ===
+total 24
+drwxr-xr-x 2 root root 3864 Oct 13 00:25 .
+drwxr-xr-x 3 root root 4096 Oct 13 00:17 ..
+-rw-r--r-- 1 root root   54 Oct 13 00:21 gfs1.txt
+-rw-r--r-- 1 root root   54 Oct 13 00:21 gfs2.txt
+-rw-r--r-- 1 root root   54 Oct 13 00:21 gfs3.txt
+-rw-r--r-- 1 root root   60 Oct 13 00:25 multipath-failover-gfs1.txt
+=== FAILOVER FILE ===
+File written on gfs1 while one iSCSI path was disconnected.
+gfs1 | CHANGED | rc=0 >>
+=== HOST ===
+gfs1
+=== ISCSI SESSIONS ===
+tcp: [2] 10.50.12.10:3260,1 iqn.2026-10.ru.otus:gfs-target (non-flash)
+tcp: [3] 10.50.11.10:3260,1 iqn.2026-10.ru.otus:gfs-target (non-flash)
+=== MULTIPATH ===
+mpatha (360014050a83af549213459ab44052062) dm-0 LIO-ORG,gfs_lun
+size=10G features='1 queue_if_no_path' hwhandler='1 alua' wp=rw
+`-+- policy='round-robin 0' prio=50 status=active
+  |- 1:0:0:0 sdb 8:16 active ready running
+  `- 0:0:0:0 sda 8:0  active ready running
+=== QUORUM ===
+Quorum information
+------------------
+Date:             Tue Oct 13 00:29:05 2026
+Quorum provider:  corosync_votequorum
+Nodes:            3
+Node ID:          1
+Ring ID:          1.e
+Quorate:          Yes
+
+Votequorum information
+----------------------
+Expected votes:   3
+Highest expected: 3
+Total votes:      3
+Quorum:           2
+Flags:            Quorate
+
+Membership information
+----------------------
+    Nodeid      Votes Name
+         1          1 gfs1 (local)
+         2          1 gfs2
+         3          1 gfs3
+=== CLUSTER NODES ===
+
+Membership information
+----------------------
+    Nodeid      Votes Name
+         1          1 gfs1 (local)
+         2          1 gfs2
+         3          1 gfs3
+=== SERVICES ===
+active
+active
+active
+active
+=== SHARED VG ===
+  VG      VSize   VFree LockType VLockArgs
+  vg_gfs2 <10.00g    0  dlm      1.0.0:otus_gfs2
+=== SHARED LV ===
+  LV      LSize   Attr       Devices
+  lv_gfs2 <10.00g -wi-ao---- /dev/mapper/mpatha(0)
+=== GFS2 SIGNATURE ===
+/dev/vg_gfs2/lv_gfs2: LABEL="otus_gfs2:gfsdata" UUID="fedfb9f8-43a3-4e1e-9512-0ca8ba856b4d" BLOCK_SIZE="4096" TYPE="gfs2"
+=== GFS2 MOUNT ===
+TARGET    SOURCE                      FSTYPE OPTIONS
+/mnt/gfs2 /dev/mapper/vg_gfs2-lv_gfs2 gfs2   rw,noatime,rgrplvb
+=== SHARED FILES ===
+total 24
+drwxr-xr-x 2 root root 3864 Oct 13 00:25 .
+drwxr-xr-x 3 root root 4096 Oct 13 00:17 ..
+-rw-r--r-- 1 root root   54 Oct 13 00:21 gfs1.txt
+-rw-r--r-- 1 root root   54 Oct 13 00:21 gfs2.txt
+-rw-r--r-- 1 root root   54 Oct 13 00:21 gfs3.txt
+-rw-r--r-- 1 root root   60 Oct 13 00:25 multipath-failover-gfs1.txt
+=== FAILOVER FILE ===
+File written on gfs1 while one iSCSI path was disconnected.
+gfs3 | CHANGED | rc=0 >>
+=== HOST ===
+gfs3
+=== ISCSI SESSIONS ===
+tcp: [1] 10.50.11.10:3260,1 iqn.2026-10.ru.otus:gfs-target (non-flash)
+tcp: [2] 10.50.12.10:3260,1 iqn.2026-10.ru.otus:gfs-target (non-flash)
+=== MULTIPATH ===
+mpatha (360014050a83af549213459ab44052062) dm-0 LIO-ORG,gfs_lun
+size=10G features='1 queue_if_no_path' hwhandler='1 alua' wp=rw
+`-+- policy='round-robin 0' prio=50 status=active
+  |- 0:0:0:0 sda 8:0  active ready running
+  `- 1:0:0:0 sdb 8:16 active ready running
+=== QUORUM ===
+Quorum information
+------------------
+Date:             Tue Oct 13 00:29:05 2026
+Quorum provider:  corosync_votequorum
+Nodes:            3
+Node ID:          3
+Ring ID:          1.e
+Quorate:          Yes
+
+Votequorum information
+----------------------
+Expected votes:   3
+Highest expected: 3
+Total votes:      3
+Quorum:           2
+Flags:            Quorate
+
+Membership information
+----------------------
+    Nodeid      Votes Name
+         1          1 gfs1
+         2          1 gfs2
+         3          1 gfs3 (local)
+=== CLUSTER NODES ===
+
+Membership information
+----------------------
+    Nodeid      Votes Name
+         1          1 gfs1
+         2          1 gfs2
+         3          1 gfs3 (local)
+=== SERVICES ===
+active
+active
+active
+active
+=== SHARED VG ===
+  VG      VSize   VFree LockType VLockArgs
+  vg_gfs2 <10.00g    0  dlm      1.0.0:otus_gfs2
+=== SHARED LV ===
+  LV      LSize   Attr       Devices
+  lv_gfs2 <10.00g -wi-ao---- /dev/mapper/mpatha(0)
+=== GFS2 SIGNATURE ===
+/dev/vg_gfs2/lv_gfs2: LABEL="otus_gfs2:gfsdata" UUID="fedfb9f8-43a3-4e1e-9512-0ca8ba856b4d" BLOCK_SIZE="4096" TYPE="gfs2"
+=== GFS2 MOUNT ===
+TARGET    SOURCE                      FSTYPE OPTIONS
+/mnt/gfs2 /dev/mapper/vg_gfs2-lv_gfs2 gfs2   rw,noatime,rgrplvb
+=== SHARED FILES ===
+total 24
+drwxr-xr-x 2 root root 3864 Oct 13 00:25 .
+drwxr-xr-x 3 root root 4096 Oct 13 00:17 ..
+-rw-r--r-- 1 root root   54 Oct 13 00:21 gfs1.txt
+-rw-r--r-- 1 root root   54 Oct 13 00:21 gfs2.txt
+-rw-r--r-- 1 root root   54 Oct 13 00:21 gfs3.txt
+-rw-r--r-- 1 root root   60 Oct 13 00:25 multipath-failover-gfs1.txt
+=== FAILOVER FILE ===
+File written on gfs1 while one iSCSI path was disconnected.

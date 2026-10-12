@@ -1,0 +1,6 @@
+---
+- name: Configure iSCSI initiators and multipath
+  hosts: gfs_nodes
+  become: true
+  roles:
+    - gfs2_cluster

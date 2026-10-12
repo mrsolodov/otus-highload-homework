@@ -1,0 +1,6 @@
+---
+- name: Configure iSCSI target
+  hosts: iscsi_target
+  become: true
+  roles:
+    - iscsi_target

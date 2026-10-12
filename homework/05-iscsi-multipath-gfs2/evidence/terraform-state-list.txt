@@ -1,0 +1,12 @@
+data.yandex_compute_image.ubuntu
+yandex_compute_disk.gfs_lun
+yandex_compute_instance.gfs_node["gfs1"]
+yandex_compute_instance.gfs_node["gfs2"]
+yandex_compute_instance.gfs_node["gfs3"]
+yandex_compute_instance.iscsi_target
+yandex_vpc_network.gfs2
+yandex_vpc_security_group.gfs2
+yandex_vpc_subnet.path_a
+yandex_vpc_subnet.path_b
+yandex_vpc_subnet.storage_path_a
+yandex_vpc_subnet.storage_path_b

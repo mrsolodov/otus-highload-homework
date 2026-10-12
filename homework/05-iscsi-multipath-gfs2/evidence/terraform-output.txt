@@ -1,0 +1,49 @@
+ansible_inventory = <<EOT
+[iscsi_target]
+gfs-target ansible_host=153.51.113.176 path_a_ip=10.50.11.10 path_b_ip=10.50.12.10
+
+[gfs_nodes]
+gfs1 ansible_host=51.250.34.165 cluster_ip=10.50.1.21 path_a_ip=10.50.1.21 path_b_ip=10.50.2.21
+gfs2 ansible_host=153.51.114.128 cluster_ip=10.50.11.22 path_a_ip=10.50.11.22 path_b_ip=10.50.12.22
+gfs3 ansible_host=158.160.242.81 cluster_ip=10.50.1.23 path_a_ip=10.50.1.23 path_b_ip=10.50.2.23
+
+[all:vars]
+ansible_user=ubuntu
+ansible_python_interpreter=/usr/bin/python3
+ansible_ssh_common_args='-o StrictHostKeyChecking=accept-new'
+
+EOT
+deployment_layout = {
+  "ru-central1-d" = [
+    "gfs1",
+    "gfs3",
+  ]
+  "ru-central1-e" = [
+    "gfs-target",
+    "gfs2",
+  ]
+}
+gfs_node_private_ips = {
+  "gfs1" = {
+    "path_a" = "10.50.1.21"
+    "path_b" = "10.50.2.21"
+  }
+  "gfs2" = {
+    "path_a" = "10.50.11.22"
+    "path_b" = "10.50.12.22"
+  }
+  "gfs3" = {
+    "path_a" = "10.50.1.23"
+    "path_b" = "10.50.2.23"
+  }
+}
+gfs_node_public_ips = {
+  "gfs1" = "51.250.34.165"
+  "gfs2" = "153.51.114.128"
+  "gfs3" = "158.160.242.81"
+}
+iscsi_target_private_ips = {
+  "path_a" = "10.50.11.10"
+  "path_b" = "10.50.12.10"
+}
+iscsi_target_public_ip = "153.51.113.176"

@@ -1,0 +1,13 @@
+---
+iscsi_target_iqn: "iqn.2026-10.ru.otus:gfs-target"
+iscsi_backstore_name: "gfs_lun"
+iscsi_backstore_device: "/dev/disk/by-id/virtio-gfs-lun"
+
+iscsi_path_a_ip: "10.50.11.10"
+iscsi_path_b_ip: "10.50.12.10"
+
+iscsi_path_a_remote_subnet: "10.50.1.0/24"
+iscsi_path_a_gateway: "10.50.11.1"
+
+iscsi_path_b_remote_subnet: "10.50.2.0/24"
+iscsi_path_b_gateway: "10.50.12.1"

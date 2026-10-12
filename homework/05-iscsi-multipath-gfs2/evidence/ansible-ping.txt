@@ -1,0 +1,16 @@
+gfs3 | SUCCESS => {
+    "changed": false,
+    "ping": "pong"
+}
+gfs1 | SUCCESS => {
+    "changed": false,
+    "ping": "pong"
+}
+gfs-target | SUCCESS => {
+    "changed": false,
+    "ping": "pong"
+}
+gfs2 | SUCCESS => {
+    "changed": false,
+    "ping": "pong"
+}

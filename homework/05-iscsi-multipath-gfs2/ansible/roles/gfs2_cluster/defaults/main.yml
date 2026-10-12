@@ -1,0 +1,6 @@
+---
+iscsi_target_iqn: "iqn.2026-10.ru.otus:gfs-target"
+
+iscsi_target_portals:
+  - "10.50.11.10"
+  - "10.50.12.10"

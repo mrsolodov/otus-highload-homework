@@ -1,0 +1,53 @@
+gfs3 | CHANGED | rc=0 >>
+=== HOST ===
+gfs3
+=== UNMOUNT GFS2 ===
+=== DEACTIVATE SHARED LV ===
+=== STOP VG LOCKSPACE ===
+=== LOGOUT PATH A ===
+Logging out of session [sid: 1, target: iqn.2026-10.ru.otus:gfs-target, portal: 10.50.11.10,3260]
+Logout of [sid: 1, target: iqn.2026-10.ru.otus:gfs-target, portal: 10.50.11.10,3260] successful.
+=== LOGOUT PATH B ===
+Logging out of session [sid: 2, target: iqn.2026-10.ru.otus:gfs-target, portal: 10.50.12.10,3260]
+Logout of [sid: 2, target: iqn.2026-10.ru.otus:gfs-target, portal: 10.50.12.10,3260] successful.
+=== VERIFY UNMOUNT ===
+GFS2_UNMOUNTED
+=== REMAINING ISCSI SESSIONS ===
+NO_ISCSI_SESSIONS
+=== REMAINING MULTIPATH ===
+mpatha (360014050a83af549213459ab44052062) dm-0 ##,##
+size=10G features='1 queue_if_no_path' hwhandler='0' wp=rw
+gfs2 | CHANGED | rc=0 >>
+=== HOST ===
+gfs2
+=== UNMOUNT GFS2 ===
+=== DEACTIVATE SHARED LV ===
+=== STOP VG LOCKSPACE ===
+=== LOGOUT PATH A ===
+Logging out of session [sid: 1, target: iqn.2026-10.ru.otus:gfs-target, portal: 10.50.11.10,3260]
+Logout of [sid: 1, target: iqn.2026-10.ru.otus:gfs-target, portal: 10.50.11.10,3260] successful.
+=== LOGOUT PATH B ===
+Logging out of session [sid: 2, target: iqn.2026-10.ru.otus:gfs-target, portal: 10.50.12.10,3260]
+Logout of [sid: 2, target: iqn.2026-10.ru.otus:gfs-target, portal: 10.50.12.10,3260] successful.
+=== VERIFY UNMOUNT ===
+GFS2_UNMOUNTED
+=== REMAINING ISCSI SESSIONS ===
+NO_ISCSI_SESSIONS
+=== REMAINING MULTIPATH ===
+gfs1 | CHANGED | rc=0 >>
+=== HOST ===
+gfs1
+=== UNMOUNT GFS2 ===
+=== DEACTIVATE SHARED LV ===
+=== STOP VG LOCKSPACE ===
+=== LOGOUT PATH A ===
+Logging out of session [sid: 3, target: iqn.2026-10.ru.otus:gfs-target, portal: 10.50.11.10,3260]
+Logout of [sid: 3, target: iqn.2026-10.ru.otus:gfs-target, portal: 10.50.11.10,3260] successful.
+=== LOGOUT PATH B ===
+Logging out of session [sid: 2, target: iqn.2026-10.ru.otus:gfs-target, portal: 10.50.12.10,3260]
+Logout of [sid: 2, target: iqn.2026-10.ru.otus:gfs-target, portal: 10.50.12.10,3260] successful.
+=== VERIFY UNMOUNT ===
+GFS2_UNMOUNTED
+=== REMAINING ISCSI SESSIONS ===
+NO_ISCSI_SESSIONS
+=== REMAINING MULTIPATH ===

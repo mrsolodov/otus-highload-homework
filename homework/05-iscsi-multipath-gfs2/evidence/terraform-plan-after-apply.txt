@@ -1,0 +1,18 @@
+[0m[1mdata.yandex_compute_image.ubuntu: Reading...[0m[0m
+[0m[1myandex_vpc_network.gfs2: Refreshing state... [id=enprtg5vk47tsms3gruk][0m
+[0m[1myandex_compute_disk.gfs_lun: Refreshing state... [id=bg080c2sdrbdvk1pp8fk][0m
+[0m[1mdata.yandex_compute_image.ubuntu: Read complete after 1s [id=fd8luhgf9o8h5vli509b][0m
+[0m[1myandex_vpc_subnet.storage_path_a: Refreshing state... [id=ajcuqteimtt76qfnspbu][0m
+[0m[1myandex_vpc_subnet.path_b: Refreshing state... [id=fl8phphb8ik23e1to7l1][0m
+[0m[1myandex_vpc_subnet.storage_path_b: Refreshing state... [id=ajc8om7cf868pfqchslk][0m
+[0m[1myandex_vpc_subnet.path_a: Refreshing state... [id=fl89kcojccgn1qbse726][0m
+[0m[1myandex_vpc_security_group.gfs2: Refreshing state... [id=enpmbd2q4rmegg8hrvdc][0m
+[0m[1myandex_compute_instance.gfs_node["gfs3"]: Refreshing state... [id=fv40jcsotn0l1osej5gk][0m
+[0m[1myandex_compute_instance.gfs_node["gfs1"]: Refreshing state... [id=fv48f8ud2lao8ut4uqb5][0m
+[0m[1myandex_compute_instance.gfs_node["gfs2"]: Refreshing state... [id=bg097gbpkf8n8fpat80s][0m
+[0m[1myandex_compute_instance.iscsi_target: Refreshing state... [id=bg0dcih5nttb6rjeii5t][0m
+
+[0m[1m[32mNo changes.[0m[1m Your infrastructure matches the configuration.[0m
+
+[0mTerraform has compared your real infrastructure against your configuration
+and found no differences, so no changes are needed.

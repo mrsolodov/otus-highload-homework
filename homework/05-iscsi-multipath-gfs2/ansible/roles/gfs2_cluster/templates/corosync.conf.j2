@@ -1,0 +1,38 @@
+totem {
+    version: 2
+    cluster_name: otus_gfs2
+    transport: knet
+    token: 10000
+    consensus: 12000
+    crypto_cipher: aes256
+    crypto_hash: sha256
+}
+
+nodelist {
+    node {
+        name: gfs1
+        nodeid: 1
+        ring0_addr: 10.50.1.21
+    }
+
+    node {
+        name: gfs2
+        nodeid: 2
+        ring0_addr: 10.50.11.22
+    }
+
+    node {
+        name: gfs3
+        nodeid: 3
+        ring0_addr: 10.50.1.23
+    }
+}
+
+quorum {
+    provider: corosync_votequorum
+}
+
+logging {
+    to_syslog: yes
+    timestamp: on
+}

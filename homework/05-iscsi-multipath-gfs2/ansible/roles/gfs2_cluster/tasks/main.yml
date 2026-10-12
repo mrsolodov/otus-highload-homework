@@ -1,0 +1,170 @@
+---
+- name: Install storage and cluster packages
+  ansible.builtin.apt:
+    name:
+      - open-iscsi
+      - multipath-tools
+      - lvm2
+      - lvm2-lockd
+      - corosync
+      - dlm-controld
+      - gfs2-utils
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Enable iSCSI daemon
+  ansible.builtin.systemd:
+    name: iscsid
+    enabled: true
+    state: started
+
+- name: Enable automatic iSCSI login service
+  ansible.builtin.systemd:
+    name: open-iscsi
+    enabled: true
+
+- name: Install persistent cross-zone routes
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/otus-storage-routes.service
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      [Unit]
+      Description=OTUS storage path routes
+      Wants=network-online.target
+      After=network-online.target
+
+      [Service]
+      Type=oneshot
+      ExecStart=/usr/sbin/ip route replace 10.50.11.10/32 via 10.50.1.1 dev eth0 src {{ path_a_ip }}
+      ExecStart=/usr/sbin/ip route replace 10.50.12.10/32 via 10.50.2.1 dev eth1 src {{ path_b_ip }}
+      RemainAfterExit=yes
+
+      [Install]
+      WantedBy=multi-user.target
+  when: inventory_hostname in ['gfs1', 'gfs3']
+
+- name: Enable persistent cross-zone routes
+  ansible.builtin.systemd:
+    name: otus-storage-routes.service
+    enabled: true
+    state: started
+    daemon_reload: true
+  when: inventory_hostname in ['gfs1', 'gfs3']
+
+- name: Configure multipath
+  ansible.builtin.copy:
+    dest: /etc/multipath.conf
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      defaults {
+          user_friendly_names yes
+          find_multipaths no
+          path_grouping_policy multibus
+          path_selector "round-robin 0"
+          path_checker tur
+          failback immediate
+          no_path_retry queue
+      }
+
+      blacklist {
+          devnode "^vda"
+      }
+  notify: Restart multipathd
+
+- name: Validate multipath configuration
+  ansible.builtin.command:
+    argv:
+      - multipath
+      - -t
+  changed_when: false
+
+- name: Apply multipath configuration before iSCSI login
+  ansible.builtin.meta: flush_handlers
+
+- name: Discover iSCSI target through both portals
+  ansible.builtin.command:
+    argv:
+      - iscsiadm
+      - -m
+      - discovery
+      - -t
+      - sendtargets
+      - -p
+      - "{{ item }}:3260"
+  loop: "{{ iscsi_target_portals }}"
+  register: iscsi_discovery
+  changed_when: false
+  retries: 3
+  delay: 3
+  until: iscsi_discovery.rc == 0
+
+- name: Configure automatic iSCSI login
+  ansible.builtin.command:
+    argv:
+      - iscsiadm
+      - -m
+      - node
+      - -T
+      - "{{ iscsi_target_iqn }}"
+      - -p
+      - "{{ item }}:3260"
+      - --op
+      - update
+      - -n
+      - node.startup
+      - -v
+      - automatic
+  loop: "{{ iscsi_target_portals }}"
+  changed_when: false
+
+- name: Check existing iSCSI sessions
+  ansible.builtin.shell:
+    cmd: >-
+      iscsiadm -m session 2>/dev/null |
+      grep -F "{{ item }}:3260"
+  loop: "{{ iscsi_target_portals }}"
+  register: iscsi_session_checks
+  changed_when: false
+  failed_when: false
+
+- name: Login through missing iSCSI paths
+  ansible.builtin.command:
+    argv:
+      - iscsiadm
+      - -m
+      - node
+      - -T
+      - "{{ iscsi_target_iqn }}"
+      - -p
+      - "{{ item.item }}:3260"
+      - --login
+  loop: "{{ iscsi_session_checks.results }}"
+  when: item.rc != 0
+
+- name: Wait for iSCSI devices
+  ansible.builtin.pause:
+    seconds: 5
+
+- name: Reload multipath maps
+  ansible.builtin.command:
+    argv:
+      - multipath
+      - -r
+  changed_when: false
+
+- name: Ensure multipath service is enabled
+  ansible.builtin.systemd:
+    name: multipathd
+    enabled: true
+    state: started
+
+- name: Configure Corosync, DLM and lvmlockd
+  ansible.builtin.import_tasks: cluster.yml
+
+- name: Configure shared LVM and GFS2
+  ansible.builtin.import_tasks: storage.yml

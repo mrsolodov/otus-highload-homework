@@ -1,0 +1,12 @@
+---
+- name: Restart multipathd
+  ansible.builtin.systemd:
+    name: multipathd
+    state: restarted
+    enabled: true
+
+- name: Restart corosync
+  ansible.builtin.systemd:
+    name: corosync
+    state: restarted
+    enabled: true

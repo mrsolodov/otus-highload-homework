@@ -1,0 +1,183 @@
+---
+- name: Install iSCSI target packages
+  ansible.builtin.apt:
+    name:
+      - targetcli-fb
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Check iSCSI backing disk
+  ansible.builtin.stat:
+    path: "{{ iscsi_backstore_device }}"
+    follow: true
+  register: iscsi_backing_disk
+
+- name: Verify that backing disk exists
+  ansible.builtin.assert:
+    that:
+      - iscsi_backing_disk.stat.exists
+      - iscsi_backing_disk.stat.isblk
+    fail_msg: "Backing disk {{ iscsi_backstore_device }} was not found or is not a block device"
+
+- name: Install persistent storage routes service
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/otus-storage-routes.service
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      [Unit]
+      Description=OTUS storage path routes
+      Wants=network-online.target
+      After=network-online.target
+
+      [Service]
+      Type=oneshot
+      ExecStart=/usr/sbin/ip route replace {{ iscsi_path_a_remote_subnet }} via {{ iscsi_path_a_gateway }} dev eth0 src {{ iscsi_path_a_ip }}
+      ExecStart=/usr/sbin/ip route replace {{ iscsi_path_b_remote_subnet }} via {{ iscsi_path_b_gateway }} dev eth1 src {{ iscsi_path_b_ip }}
+      RemainAfterExit=yes
+
+      [Install]
+      WantedBy=multi-user.target
+
+- name: Enable persistent storage routes
+  ansible.builtin.systemd:
+    name: otus-storage-routes.service
+    enabled: true
+    state: started
+    daemon_reload: true
+
+- name: Check block backstore
+  ansible.builtin.command:
+    argv:
+      - targetcli
+      - "/backstores/block/{{ iscsi_backstore_name }}"
+      - ls
+  register: iscsi_backstore_check
+  changed_when: false
+  failed_when: false
+
+- name: Create block backstore
+  ansible.builtin.command:
+    argv:
+      - targetcli
+      - /backstores/block
+      - create
+      - "name={{ iscsi_backstore_name }}"
+      - "dev={{ iscsi_backstore_device }}"
+  when: iscsi_backstore_check.rc != 0
+
+- name: Check iSCSI target
+  ansible.builtin.command:
+    argv:
+      - targetcli
+      - "/iscsi/{{ iscsi_target_iqn }}"
+      - ls
+  register: iscsi_target_check
+  changed_when: false
+  failed_when: false
+
+- name: Create iSCSI target
+  ansible.builtin.command:
+    argv:
+      - targetcli
+      - /iscsi
+      - create
+      - "{{ iscsi_target_iqn }}"
+  when: iscsi_target_check.rc != 0
+
+- name: Check target LUN
+  ansible.builtin.shell:
+    cmd: >-
+      targetcli /iscsi/{{ iscsi_target_iqn }}/tpg1/luns ls |
+      grep -F "{{ iscsi_backstore_name }}"
+  register: iscsi_lun_check
+  changed_when: false
+  failed_when: false
+
+- name: Create target LUN
+  ansible.builtin.command:
+    argv:
+      - targetcli
+      - "/iscsi/{{ iscsi_target_iqn }}/tpg1/luns"
+      - create
+      - "/backstores/block/{{ iscsi_backstore_name }}"
+  when: iscsi_lun_check.rc != 0
+
+- name: Check wildcard portal
+  ansible.builtin.shell:
+    cmd: >-
+      targetcli /iscsi/{{ iscsi_target_iqn }}/tpg1/portals ls |
+      grep -F "0.0.0.0"
+  register: iscsi_wildcard_portal
+  changed_when: false
+  failed_when: false
+
+- name: Remove wildcard portal
+  ansible.builtin.command:
+    argv:
+      - targetcli
+      - "/iscsi/{{ iscsi_target_iqn }}/tpg1/portals"
+      - delete
+      - "0.0.0.0"
+      - "3260"
+  when: iscsi_wildcard_portal.rc == 0
+
+- name: Check path A portal
+  ansible.builtin.shell:
+    cmd: >-
+      targetcli /iscsi/{{ iscsi_target_iqn }}/tpg1/portals ls |
+      grep -F "{{ iscsi_path_a_ip }}"
+  register: iscsi_path_a_portal
+  changed_when: false
+  failed_when: false
+
+- name: Create path A portal
+  ansible.builtin.command:
+    argv:
+      - targetcli
+      - "/iscsi/{{ iscsi_target_iqn }}/tpg1/portals"
+      - create
+      - "{{ iscsi_path_a_ip }}"
+      - "3260"
+  when: iscsi_path_a_portal.rc != 0
+
+- name: Check path B portal
+  ansible.builtin.shell:
+    cmd: >-
+      targetcli /iscsi/{{ iscsi_target_iqn }}/tpg1/portals ls |
+      grep -F "{{ iscsi_path_b_ip }}"
+  register: iscsi_path_b_portal
+  changed_when: false
+  failed_when: false
+
+- name: Create path B portal
+  ansible.builtin.command:
+    argv:
+      - targetcli
+      - "/iscsi/{{ iscsi_target_iqn }}/tpg1/portals"
+      - create
+      - "{{ iscsi_path_b_ip }}"
+      - "3260"
+  when: iscsi_path_b_portal.rc != 0
+
+- name: Configure dynamic ACLs for the training stand
+  ansible.builtin.command:
+    argv:
+      - targetcli
+      - "/iscsi/{{ iscsi_target_iqn }}/tpg1"
+      - set
+      - attribute
+      - authentication=0
+      - generate_node_acls=1
+      - cache_dynamic_acls=1
+      - demo_mode_write_protect=0
+  changed_when: false
+
+- name: Save target configuration
+  ansible.builtin.command:
+    argv:
+      - targetcli
+      - saveconfig
+  changed_when: false

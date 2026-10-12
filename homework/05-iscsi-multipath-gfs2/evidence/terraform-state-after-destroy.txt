@@ -1,0 +1,7 @@
+Destroy verified: 2026-10-13 00:48:38 +03:00
+Remaining Terraform state resources: 0
+Remaining virtual machines: 0
+Remaining disks: 0
+Remaining networks: 0
+Remaining subnets: 0
+Remaining security groups: 0

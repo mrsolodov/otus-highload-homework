@@ -1,0 +1,286 @@
+---
+- name: Check shared volume group on gfs1
+  ansible.builtin.command:
+    argv:
+      - vgs
+      - --noheadings
+      - vg_gfs2
+  register: shared_vg_check
+  changed_when: false
+  failed_when: false
+  delegate_to: gfs1
+  run_once: true
+
+- name: Create shared volume group
+  ansible.builtin.command:
+    argv:
+      - vgcreate
+      - --shared
+      - --yes
+      - vg_gfs2
+      - /dev/mapper/mpatha
+  when: shared_vg_check.rc != 0
+  delegate_to: gfs1
+  run_once: true
+
+- name: Rescan LVM metadata
+  ansible.builtin.command:
+    argv:
+      - vgscan
+      - --cache
+  changed_when: false
+
+- name: Wait until shared volume group is visible
+  ansible.builtin.command:
+    argv:
+      - vgs
+      - --noheadings
+      - -o
+      - vg_name,locktype
+      - vg_gfs2
+  register: shared_vg_visibility
+  changed_when: false
+  failed_when: false
+  retries: 10
+  delay: 3
+  until: shared_vg_visibility.rc == 0
+
+- name: Check shared VG lockspace
+  ansible.builtin.shell:
+    cmd: lvmlockctl -i | grep -F "vg_gfs2"
+  register: shared_vg_lockspace
+  changed_when: false
+  failed_when: false
+
+- name: Start shared VG lockspace
+  ansible.builtin.command:
+    argv:
+      - vgchange
+      - --lockstart
+      - vg_gfs2
+  when: shared_vg_lockspace.rc != 0
+
+- name: Wait until shared VG lockspace is ready
+  ansible.builtin.shell:
+    cmd: lvmlockctl -i | grep -F "vg_gfs2"
+  register: shared_vg_lockspace_ready
+  changed_when: false
+  retries: 20
+  delay: 3
+  until: shared_vg_lockspace_ready.rc == 0
+
+- name: Check logical volume on gfs1
+  ansible.builtin.command:
+    argv:
+      - lvs
+      - --noheadings
+      - vg_gfs2/lv_gfs2
+  register: shared_lv_check
+  changed_when: false
+  failed_when: false
+  delegate_to: gfs1
+  run_once: true
+
+- name: Create logical volume
+  ansible.builtin.command:
+    argv:
+      - lvcreate
+      - --activate
+      - "n"
+      - --yes
+      - --extents
+      - 100%FREE
+      - --name
+      - lv_gfs2
+      - vg_gfs2
+  when: shared_lv_check.rc != 0
+  delegate_to: gfs1
+  run_once: true
+
+- name: Rescan LVM metadata after creating LV
+  ansible.builtin.command:
+    argv:
+      - vgscan
+      - --cache
+  changed_when: false
+
+- name: Wait until logical volume is visible
+  ansible.builtin.command:
+    argv:
+      - lvs
+      - --noheadings
+      - vg_gfs2/lv_gfs2
+  register: shared_lv_visibility
+  changed_when: false
+  failed_when: false
+  retries: 10
+  delay: 3
+  until: shared_lv_visibility.rc == 0
+
+- name: Check whether logical volume device is active on gfs1
+  ansible.builtin.shell:
+    cmd: test -b /dev/vg_gfs2/lv_gfs2
+  register: shared_lv_device
+  changed_when: false
+  failed_when: false
+  delegate_to: gfs1
+  run_once: true
+
+- name: Activate logical volume exclusively for formatting
+  ansible.builtin.command:
+    argv:
+      - lvchange
+      - -aey
+      - vg_gfs2/lv_gfs2
+  when: shared_lv_device.rc != 0
+  delegate_to: gfs1
+  run_once: true
+
+- name: Check filesystem type
+  ansible.builtin.command:
+    argv:
+      - blkid
+      - -s
+      - TYPE
+      - -o
+      - value
+      - /dev/vg_gfs2/lv_gfs2
+  register: gfs2_filesystem_check
+  changed_when: false
+  failed_when: false
+  delegate_to: gfs1
+  run_once: true
+
+- name: Create GFS2 filesystem with three journals
+  ansible.builtin.command:
+    argv:
+      - mkfs.gfs2
+      - -O
+      - -p
+      - lock_dlm
+      - -t
+      - otus_gfs2:gfsdata
+      - -j
+      - "3"
+      - /dev/vg_gfs2/lv_gfs2
+  when: gfs2_filesystem_check.stdout | trim != "gfs2"
+  delegate_to: gfs1
+  run_once: true
+
+- name: Deactivate exclusive LV after formatting
+  ansible.builtin.command:
+    argv:
+      - lvchange
+      - -an
+      - vg_gfs2/lv_gfs2
+  when: gfs2_filesystem_check.stdout | trim != "gfs2"
+  delegate_to: gfs1
+  run_once: true
+
+- name: Activate GFS2 logical volume in shared mode
+  ansible.builtin.command:
+    argv:
+      - lvchange
+      - -asy
+      - vg_gfs2/lv_gfs2
+  changed_when: false
+
+- name: Create GFS2 mount directory
+  ansible.builtin.file:
+    path: /mnt/gfs2
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Install GFS2 activation service
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/otus-gfs2-activate.service
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      [Unit]
+      Description=Activate OTUS shared GFS2 volume
+      Wants=network-online.target open-iscsi.service multipathd.service
+      Requires=corosync.service dlm.service lvmlockd.service
+      After=network-online.target open-iscsi.service multipathd.service corosync.service dlm.service lvmlockd.service
+      Before=mnt-gfs2.mount
+
+      [Service]
+      Type=oneshot
+      ExecStart=/usr/sbin/vgchange --lockstart vg_gfs2
+      ExecStart=/usr/sbin/lvchange -asy vg_gfs2/lv_gfs2
+      ExecStop=/usr/sbin/lvchange -an vg_gfs2/lv_gfs2
+      ExecStop=/usr/sbin/vgchange --lockstop vg_gfs2
+      RemainAfterExit=yes
+
+      [Install]
+      WantedBy=multi-user.target
+
+- name: Enable GFS2 activation service
+  ansible.builtin.systemd:
+    name: otus-gfs2-activate.service
+    enabled: true
+    daemon_reload: true
+
+- name: Add GFS2 filesystem to fstab
+  ansible.builtin.lineinfile:
+    path: /etc/fstab
+    regexp: '^/dev/vg_gfs2/lv_gfs2\s+'
+    line: '/dev/vg_gfs2/lv_gfs2 /mnt/gfs2 gfs2 defaults,noatime,_netdev,x-systemd.requires=otus-gfs2-activate.service 0 0'
+    state: present
+
+- name: Install kernel modules required by GFS2
+  ansible.builtin.apt:
+    name: "linux-modules-extra-{{ ansible_kernel }}"
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Configure GFS2 module loading at boot
+  ansible.builtin.copy:
+    dest: /etc/modules-load.d/gfs2.conf
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      gfs2
+
+- name: Load GFS2 kernel module
+  ansible.builtin.command:
+    argv:
+      - modprobe
+      - gfs2
+  changed_when: false
+
+- name: Verify that kernel supports GFS2
+  ansible.builtin.shell:
+    cmd: grep -q gfs2 /proc/filesystems
+  changed_when: false
+- name: Check GFS2 mount
+  ansible.builtin.command:
+    argv:
+      - mountpoint
+      - -q
+      - /mnt/gfs2
+  register: gfs2_mount_check
+  changed_when: false
+  failed_when: false
+
+- name: Mount GFS2 filesystem
+  ansible.builtin.command:
+    argv:
+      - mount
+      - /mnt/gfs2
+  when: gfs2_mount_check.rc != 0
+
+- name: Create test file from each cluster node
+  ansible.builtin.copy:
+    dest: "/mnt/gfs2/{{ inventory_hostname }}.txt"
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      File created from {{ inventory_hostname }}
+      Shared GFS2 storage is working.
