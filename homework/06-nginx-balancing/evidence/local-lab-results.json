@@ -1,0 +1,250 @@
+{
+    "Time":  "2026-10-23T14:19:57.6926098+03:00",
+    "Status":  "passed",
+    "RoundRobin":  [
+                       {
+                           "Path":  "/rr/api/health",
+                           "Status":  200,
+                           "Frontend":  "web2",
+                           "Mode":  "round-robin",
+                           "Body":  "{\"status\": \"ok\", \"node\": \"web2\", \"path\": \"/api/health\"}"
+                       },
+                       {
+                           "Path":  "/rr/api/health",
+                           "Status":  200,
+                           "Frontend":  "web3",
+                           "Mode":  "round-robin",
+                           "Body":  "{\"status\": \"ok\", \"node\": \"web3\", \"path\": \"/api/health\"}"
+                       },
+                       {
+                           "Path":  "/rr/api/health",
+                           "Status":  200,
+                           "Frontend":  "web1",
+                           "Mode":  "round-robin",
+                           "Body":  "{\"status\": \"ok\", \"node\": \"web1\", \"path\": \"/api/health\"}"
+                       },
+                       {
+                           "Path":  "/rr/api/health",
+                           "Status":  200,
+                           "Frontend":  "web2",
+                           "Mode":  "round-robin",
+                           "Body":  "{\"status\": \"ok\", \"node\": \"web2\", \"path\": \"/api/health\"}"
+                       },
+                       {
+                           "Path":  "/rr/api/health",
+                           "Status":  200,
+                           "Frontend":  "web3",
+                           "Mode":  "round-robin",
+                           "Body":  "{\"status\": \"ok\", \"node\": \"web3\", \"path\": \"/api/health\"}"
+                       },
+                       {
+                           "Path":  "/rr/api/health",
+                           "Status":  200,
+                           "Frontend":  "web1",
+                           "Mode":  "round-robin",
+                           "Body":  "{\"status\": \"ok\", \"node\": \"web1\", \"path\": \"/api/health\"}"
+                       },
+                       {
+                           "Path":  "/rr/api/health",
+                           "Status":  200,
+                           "Frontend":  "web2",
+                           "Mode":  "round-robin",
+                           "Body":  "{\"status\": \"ok\", \"node\": \"web2\", \"path\": \"/api/health\"}"
+                       },
+                       {
+                           "Path":  "/rr/api/health",
+                           "Status":  200,
+                           "Frontend":  "web3",
+                           "Mode":  "round-robin",
+                           "Body":  "{\"status\": \"ok\", \"node\": \"web3\", \"path\": \"/api/health\"}"
+                       },
+                       {
+                           "Path":  "/rr/api/health",
+                           "Status":  200,
+                           "Frontend":  "web1",
+                           "Mode":  "round-robin",
+                           "Body":  "{\"status\": \"ok\", \"node\": \"web1\", \"path\": \"/api/health\"}"
+                       }
+                   ],
+    "Hash":  [
+                 {
+                     "Path":  "/hash/api/health?key=otus",
+                     "Status":  200,
+                     "Frontend":  "web3",
+                     "Mode":  "hash",
+                     "Body":  "{\"status\": \"ok\", \"node\": \"web3\", \"path\": \"/api/health\"}"
+                 },
+                 {
+                     "Path":  "/hash/api/health?key=otus",
+                     "Status":  200,
+                     "Frontend":  "web3",
+                     "Mode":  "hash",
+                     "Body":  "{\"status\": \"ok\", \"node\": \"web3\", \"path\": \"/api/health\"}"
+                 },
+                 {
+                     "Path":  "/hash/api/health?key=otus",
+                     "Status":  200,
+                     "Frontend":  "web3",
+                     "Mode":  "hash",
+                     "Body":  "{\"status\": \"ok\", \"node\": \"web3\", \"path\": \"/api/health\"}"
+                 },
+                 {
+                     "Path":  "/hash/api/health?key=otus",
+                     "Status":  200,
+                     "Frontend":  "web3",
+                     "Mode":  "hash",
+                     "Body":  "{\"status\": \"ok\", \"node\": \"web3\", \"path\": \"/api/health\"}"
+                 },
+                 {
+                     "Path":  "/hash/api/health?key=otus",
+                     "Status":  200,
+                     "Frontend":  "web3",
+                     "Mode":  "hash",
+                     "Body":  "{\"status\": \"ok\", \"node\": \"web3\", \"path\": \"/api/health\"}"
+                 },
+                 {
+                     "Path":  "/hash/api/health?key=otus",
+                     "Status":  200,
+                     "Frontend":  "web3",
+                     "Mode":  "hash",
+                     "Body":  "{\"status\": \"ok\", \"node\": \"web3\", \"path\": \"/api/health\"}"
+                 }
+             ],
+    "Static":  {
+                   "Path":  "/rr/",
+                   "Status":  200,
+                   "Frontend":  "web2",
+                   "Mode":  "round-robin",
+                   "Body":  "\u003c!doctype html\u003e\n\u003chtml lang=\"ru\"\u003e\n  \u003chead\u003e\u003cmeta charset=\"utf-8\"\u003e\u003ctitle\u003eOTUS web2\u003c/title\u003e\u003c/head\u003e\n  \u003cbody\u003e\n    \u003ch1\u003eFrontend web2\u003c/h1\u003e\n    \u003cp\u003eNginx + uWSGI; ÑÐµÐ¶Ð¸Ð¼ Ð±Ð°Ð»Ð°Ð½ÑÐ¸ÑÐ¾Ð²ÐºÐ¸ ÑÐºÐ°Ð·Ð°Ð½ Ð² X-Balancing-Mode.\u003c/p\u003e\n  \u003c/body\u003e\n\u003c/html\u003e"
+               },
+    "Failover":  [
+                     {
+                         "Path":  "/rr/api/health",
+                         "Status":  200,
+                         "Frontend":  "web3",
+                         "Mode":  "round-robin",
+                         "Body":  "{\"status\": \"ok\", \"node\": \"web3\", \"path\": \"/api/health\"}"
+                     },
+                     {
+                         "Path":  "/rr/api/health",
+                         "Status":  200,
+                         "Frontend":  "web1",
+                         "Mode":  "round-robin",
+                         "Body":  "{\"status\": \"ok\", \"node\": \"web1\", \"path\": \"/api/health\"}"
+                     },
+                     {
+                         "Path":  "/rr/api/health",
+                         "Status":  200,
+                         "Frontend":  "web3",
+                         "Mode":  "round-robin",
+                         "Body":  "{\"status\": \"ok\", \"node\": \"web3\", \"path\": \"/api/health\"}"
+                     },
+                     {
+                         "Path":  "/rr/api/health",
+                         "Status":  200,
+                         "Frontend":  "web3",
+                         "Mode":  "round-robin",
+                         "Body":  "{\"status\": \"ok\", \"node\": \"web3\", \"path\": \"/api/health\"}"
+                     },
+                     {
+                         "Path":  "/rr/api/health",
+                         "Status":  200,
+                         "Frontend":  "web1",
+                         "Mode":  "round-robin",
+                         "Body":  "{\"status\": \"ok\", \"node\": \"web1\", \"path\": \"/api/health\"}"
+                     },
+                     {
+                         "Path":  "/rr/api/health",
+                         "Status":  200,
+                         "Frontend":  "web3",
+                         "Mode":  "round-robin",
+                         "Body":  "{\"status\": \"ok\", \"node\": \"web3\", \"path\": \"/api/health\"}"
+                     }
+                 ],
+    "Recovered":  [
+                      {
+                          "Path":  "/rr/api/health",
+                          "Status":  200,
+                          "Frontend":  "web1",
+                          "Mode":  "round-robin",
+                          "Body":  "{\"status\": \"ok\", \"node\": \"web1\", \"path\": \"/api/health\"}"
+                      },
+                      {
+                          "Path":  "/rr/api/health",
+                          "Status":  200,
+                          "Frontend":  "web3",
+                          "Mode":  "round-robin",
+                          "Body":  "{\"status\": \"ok\", \"node\": \"web3\", \"path\": \"/api/health\"}"
+                      },
+                      {
+                          "Path":  "/rr/api/health",
+                          "Status":  200,
+                          "Frontend":  "web1",
+                          "Mode":  "round-robin",
+                          "Body":  "{\"status\": \"ok\", \"node\": \"web1\", \"path\": \"/api/health\"}"
+                      },
+                      {
+                          "Path":  "/rr/api/health",
+                          "Status":  200,
+                          "Frontend":  "web2",
+                          "Mode":  "round-robin",
+                          "Body":  "{\"status\": \"ok\", \"node\": \"web2\", \"path\": \"/api/health\"}"
+                      },
+                      {
+                          "Path":  "/rr/api/health",
+                          "Status":  200,
+                          "Frontend":  "web3",
+                          "Mode":  "round-robin",
+                          "Body":  "{\"status\": \"ok\", \"node\": \"web3\", \"path\": \"/api/health\"}"
+                      },
+                      {
+                          "Path":  "/rr/api/health",
+                          "Status":  200,
+                          "Frontend":  "web1",
+                          "Mode":  "round-robin",
+                          "Body":  "{\"status\": \"ok\", \"node\": \"web1\", \"path\": \"/api/health\"}"
+                      },
+                      {
+                          "Path":  "/rr/api/health",
+                          "Status":  200,
+                          "Frontend":  "web2",
+                          "Mode":  "round-robin",
+                          "Body":  "{\"status\": \"ok\", \"node\": \"web2\", \"path\": \"/api/health\"}"
+                      },
+                      {
+                          "Path":  "/rr/api/health",
+                          "Status":  200,
+                          "Frontend":  "web3",
+                          "Mode":  "round-robin",
+                          "Body":  "{\"status\": \"ok\", \"node\": \"web3\", \"path\": \"/api/health\"}"
+                      },
+                      {
+                          "Path":  "/rr/api/health",
+                          "Status":  200,
+                          "Frontend":  "web1",
+                          "Mode":  "round-robin",
+                          "Body":  "{\"status\": \"ok\", \"node\": \"web1\", \"path\": \"/api/health\"}"
+                      },
+                      {
+                          "Path":  "/rr/api/health",
+                          "Status":  200,
+                          "Frontend":  "web2",
+                          "Mode":  "round-robin",
+                          "Body":  "{\"status\": \"ok\", \"node\": \"web2\", \"path\": \"/api/health\"}"
+                      },
+                      {
+                          "Path":  "/rr/api/health",
+                          "Status":  200,
+                          "Frontend":  "web3",
+                          "Mode":  "round-robin",
+                          "Body":  "{\"status\": \"ok\", \"node\": \"web3\", \"path\": \"/api/health\"}"
+                      },
+                      {
+                          "Path":  "/rr/api/health",
+                          "Status":  200,
+                          "Frontend":  "web1",
+                          "Mode":  "round-robin",
+                          "Body":  "{\"status\": \"ok\", \"node\": \"web1\", \"path\": \"/api/health\"}"
+                      }
+                  ]
+}

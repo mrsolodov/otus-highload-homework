@@ -1,0 +1,43 @@
+upstream otus_round_robin {
+{% for name in groups['frontends'] %}
+    server {{ hostvars[name].private_ip }}:80 max_fails=1 fail_timeout=10s;
+{% endfor %}
+}
+
+upstream otus_hash {
+    hash $arg_key consistent;
+{% for name in groups['frontends'] %}
+    server {{ hostvars[name].private_ip }}:80 max_fails=1 fail_timeout=10s;
+{% endfor %}
+}
+
+server {
+    listen 80 default_server;
+    server_name _;
+
+    location = / {
+        return 200 "Use /rr/ or /hash/?key=demo\n";
+    }
+
+    location /rr/ {
+        proxy_pass http://otus_round_robin/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_connect_timeout 2s;
+        proxy_read_timeout 5s;
+        proxy_next_upstream error timeout http_502 http_503 http_504;
+        proxy_next_upstream_tries 3;
+        add_header X-Balancing-Mode round-robin always;
+    }
+
+    location /hash/ {
+        proxy_pass http://otus_hash/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_connect_timeout 2s;
+        proxy_read_timeout 5s;
+        proxy_next_upstream error timeout http_502 http_503 http_504;
+        proxy_next_upstream_tries 3;
+        add_header X-Balancing-Mode hash always;
+    }
+}

@@ -1,0 +1,182 @@
+---
+- name: Configure application frontends
+  hosts: frontends
+  become: true
+  gather_facts: false
+  pre_tasks:
+    - name: Wait for the host to accept SSH connections
+      ansible.builtin.wait_for_connection:
+        timeout: 240
+
+  tasks:
+    - name: Install Nginx and uWSGI with Python 3 plugin
+      ansible.builtin.apt:
+        name:
+          - nginx
+          - uwsgi-core
+          - uwsgi-plugin-python3
+        update_cache: true
+        cache_valid_time: 3600
+        state: present
+
+    - name: Create application directory
+      ansible.builtin.file:
+        path: /srv/otus-app
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Install WSGI test application
+      ansible.builtin.copy:
+        src: files/app.py
+        dest: /srv/otus-app/app.py
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Restart app
+
+    - name: Install uWSGI service
+      ansible.builtin.copy:
+        src: files/otus-app.service
+        dest: /etc/systemd/system/otus-app.service
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Restart app
+
+    - name: Start and enable uWSGI application
+      ansible.builtin.systemd_service:
+        name: otus-app
+        enabled: true
+        state: started
+        daemon_reload: true
+
+    - name: Create static content directory
+      ansible.builtin.file:
+        path: /srv/otus-static
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Install node-specific static page
+      ansible.builtin.template:
+        src: templates/index.html.j2
+        dest: /srv/otus-static/index.html
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Configure frontend Nginx
+      ansible.builtin.template:
+        src: templates/frontend.conf.j2
+        dest: /etc/nginx/sites-available/otus-frontend
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Reload nginx
+
+    - name: Enable frontend site
+      ansible.builtin.file:
+        src: /etc/nginx/sites-available/otus-frontend
+        dest: /etc/nginx/sites-enabled/otus-frontend
+        state: link
+      notify: Reload nginx
+
+    - name: Disable default site
+      ansible.builtin.file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+      notify: Reload nginx
+
+    - name: Start and enable Nginx
+      ansible.builtin.service:
+        name: nginx
+        state: started
+        enabled: true
+
+    - name: Apply pending service restarts before health checks
+      ansible.builtin.meta: flush_handlers
+
+    - name: Check application and static content locally
+      ansible.builtin.uri:
+        url: "http://127.0.0.1{{ item }}"
+        status_code: 200
+      loop:
+        - /
+        - /api/health
+      changed_when: false
+
+  handlers:
+    - name: Restart app
+      ansible.builtin.systemd_service:
+        name: otus-app
+        state: restarted
+        daemon_reload: true
+
+    - name: Reload nginx
+      ansible.builtin.shell: nginx -t && systemctl reload nginx
+      changed_when: true
+
+- name: Configure public Nginx load balancer
+  hosts: load_balancer
+  become: true
+  gather_facts: false
+  pre_tasks:
+    - name: Wait for the host to accept SSH connections
+      ansible.builtin.wait_for_connection:
+        timeout: 240
+
+  tasks:
+    - name: Install Nginx
+      ansible.builtin.apt:
+        name: nginx
+        update_cache: true
+        cache_valid_time: 3600
+        state: present
+
+    - name: Configure round-robin and hash upstreams
+      ansible.builtin.template:
+        src: templates/load-balancer.conf.j2
+        dest: /etc/nginx/sites-available/otus-lb
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Reload nginx
+
+    - name: Enable load balancer site
+      ansible.builtin.file:
+        src: /etc/nginx/sites-available/otus-lb
+        dest: /etc/nginx/sites-enabled/otus-lb
+        state: link
+      notify: Reload nginx
+
+    - name: Disable default site
+      ansible.builtin.file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+      notify: Reload nginx
+
+    - name: Start and enable Nginx
+      ansible.builtin.service:
+        name: nginx
+        state: started
+        enabled: true
+
+    - name: Apply pending Nginx reload
+      ansible.builtin.meta: flush_handlers
+
+    - name: Check both algorithms on the balancer
+      ansible.builtin.uri:
+        url: "http://127.0.0.1{{ item }}"
+        status_code: 200
+      loop:
+        - /rr/api/health
+        - /hash/api/health?key=otus
+      changed_when: false
+
+  handlers:
+    - name: Reload nginx
+      ansible.builtin.shell: nginx -t && systemctl reload nginx
+      changed_when: true

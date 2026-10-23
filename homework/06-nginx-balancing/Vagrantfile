@@ -1,0 +1,31 @@
+Vagrant.configure("2") do |config|
+  config.vm.box = "bento/ubuntu-24.04"
+  config.vm.box_check_update = false
+
+  # Start the frontends before the load balancer so its health checks can pass.
+  {
+    "web1" => "192.168.77.11",
+    "web2" => "192.168.77.12",
+    "web3" => "192.168.77.13",
+    "lb"   => "192.168.77.10"
+  }.each do |name, address|
+    config.vm.define name do |machine|
+      machine.vm.hostname = name
+      machine.vm.network "private_network", ip: address
+
+      machine.vm.provider "virtualbox" do |vb|
+        vb.name = "otus-nginx-#{name}"
+        vb.memory = 1024
+        vb.cpus = 1
+      end
+
+      # Runs inside each guest, so Windows does not need Ansible or WSL networking.
+      machine.vm.provision "ansible_local" do |ansible|
+        ansible.playbook = "ansible/site.yml"
+        ansible.inventory_path = "ansible/inventory-vagrant.ini"
+        ansible.limit = name
+        ansible.install = true
+      end
+    end
+  end
+end

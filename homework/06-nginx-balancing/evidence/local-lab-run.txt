@@ -1,0 +1,88 @@
+=== Validate ===
+Vagrantfile validated successfully.
+=== Create and configure four VMs ===
+PLAY RECAP *********************************************************************
+lb                         : ok=8    changed=5    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+=== VM status ===
+
+=== Round-robin ===
+
+Path           Status Frontend Mode
+----           ------ -------- ----
+/rr/api/health    200 web2     round-robin
+/rr/api/health    200 web3     round-robin
+/rr/api/health    200 web1     round-robin
+/rr/api/health    200 web2     round-robin
+/rr/api/health    200 web3     round-robin
+/rr/api/health    200 web1     round-robin
+/rr/api/health    200 web2     round-robin
+/rr/api/health    200 web3     round-robin
+/rr/api/health    200 web1     round-robin
+
+
+=== Consistent hash ===
+
+Path                      Status Frontend Mode
+----                      ------ -------- ----
+/hash/api/health?key=otus    200 web3     hash
+/hash/api/health?key=otus    200 web3     hash
+/hash/api/health?key=otus    200 web3     hash
+/hash/api/health?key=otus    200 web3     hash
+/hash/api/health?key=otus    200 web3     hash
+/hash/api/health?key=otus    200 web3     hash
+
+
+=== Static content ===
+
+
+Path     : /rr/
+Status   : 200
+Frontend : web2
+Mode     : round-robin
+Body     : <!doctype html>
+           <html lang="ru">
+             <head><meta charset="utf-8"><title>OTUS web2</title></head>
+             <body>
+               <h1>Frontend web2</h1>
+               <p>Nginx + uWSGI; ÑÐµÐ¶Ð¸Ð¼ Ð±Ð°Ð»Ð°Ð½ÑÐ¸ÑÐ¾Ð²ÐºÐ¸ ÑÐºÐ°Ð·Ð°Ð½ Ð² X-Balancing-Mode.</p>
+             </body>
+           </html>
+
+
+
+=== Stop web2 Nginx and verify availability ===
+
+
+Path           Status Frontend Mode
+----           ------ -------- ----
+/rr/api/health    200 web3     round-robin
+/rr/api/health    200 web1     round-robin
+/rr/api/health    200 web3     round-robin
+/rr/api/health    200 web3     round-robin
+/rr/api/health    200 web1     round-robin
+/rr/api/health    200 web3     round-robin
+
+
+
+=== Verify recovery ===
+
+Path           Status Frontend Mode
+----           ------ -------- ----
+/rr/api/health    200 web1     round-robin
+/rr/api/health    200 web3     round-robin
+/rr/api/health    200 web1     round-robin
+/rr/api/health    200 web2     round-robin
+/rr/api/health    200 web3     round-robin
+/rr/api/health    200 web1     round-robin
+/rr/api/health    200 web2     round-robin
+/rr/api/health    200 web3     round-robin
+/rr/api/health    200 web1     round-robin
+/rr/api/health    200 web2     round-robin
+/rr/api/health    200 web3     round-robin
+/rr/api/health    200 web1     round-robin
+
+
+Checks passed. Results: evidence/local-lab-results.json
+=== Destroy local VMs ===
+
+vagrant destroy exit code: 0
