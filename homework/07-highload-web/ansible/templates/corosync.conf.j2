@@ -1,0 +1,25 @@
+totem {
+    version: 2
+    cluster_name: otus_web
+    transport: knet
+    crypto_cipher: aes256
+    crypto_hash: sha256
+}
+
+nodelist {
+{% for node in groups['storage_cluster'] | sort %}
+    node {
+        name: {{ node }}
+        nodeid: {{ loop.index }}
+        ring0_addr: {{ hostvars[node].private_ip }}
+    }
+{% endfor %}
+}
+
+quorum {
+    provider: corosync_votequorum
+}
+
+logging {
+    to_syslog: yes
+}

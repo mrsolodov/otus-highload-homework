@@ -1,0 +1,8 @@
+.vagrant/
+.secrets/
+ansible/.secrets/
+__pycache__/
+ansible/inventory.local.ini
+evidence/*.json
+evidence/*.txt
+!evidence/.gitkeep
