@@ -1,0 +1,42 @@
+name: Check highload web lab sources
+
+on:
+  push:
+    paths:
+      - 'homework/07-highload-web/**'
+      - '.github/workflows/07-highload-web-checks.yml'
+  pull_request:
+    paths:
+      - 'homework/07-highload-web/**'
+      - '.github/workflows/07-highload-web-checks.yml'
+
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check Vagrantfile and application
+        run: |
+          ruby -c homework/07-highload-web/Vagrantfile
+          python3 -m py_compile homework/07-highload-web/ansible/files/app.py
+          bash -n homework/07-highload-web/scripts/prepare-wsl.sh
+          bash -n homework/07-highload-web/scripts/deploy-wsl.sh
+      - name: Install Ansible core
+        run: python3 -m pip install 'ansible-core>=2.16,<2.19'
+      - name: Check Ansible syntax
+        working-directory: homework/07-highload-web/ansible
+        run: ansible-playbook -i inventory.ini --syntax-check site.yml
+      - name: Check PowerShell syntax
+        shell: pwsh
+        run: |
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile(
+            (Resolve-Path "homework/07-highload-web/run-local-lab.ps1").Path,
+            [ref]$tokens,
+            [ref]$errors
+          ) | Out-Null
+          if ($errors.Count -gt 0) {
+            $errors | Format-List | Out-String | Write-Error
+            exit 1
+          }
