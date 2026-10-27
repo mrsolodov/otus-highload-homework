@@ -1,14 +1,14 @@
-name: 08 MySQL cluster
+name: 11 MySQL cluster
 
 on:
   push:
     paths:
-      - 'homework/08-mysql-cluster/**'
-      - '.github/workflows/08-mysql-cluster.yml'
+      - 'homework/11-mysql-cluster/**'
+      - '.github/workflows/11-mysql-cluster.yml'
   pull_request:
     paths:
-      - 'homework/08-mysql-cluster/**'
-      - '.github/workflows/08-mysql-cluster.yml'
+      - 'homework/11-mysql-cluster/**'
+      - '.github/workflows/11-mysql-cluster.yml'
   workflow_dispatch:
 
 jobs:
@@ -17,7 +17,7 @@ jobs:
     timeout-minutes: 35
     defaults:
       run:
-        working-directory: homework/08-mysql-cluster
+        working-directory: homework/11-mysql-cluster
     steps:
       - uses: actions/checkout@v4
       - name: Check Bash syntax
@@ -31,7 +31,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: mysql-cluster-verification
-          path: homework/08-mysql-cluster/evidence/cluster-check.txt
+          path: homework/11-mysql-cluster/evidence/cluster-check.txt
           if-no-files-found: error
       - name: Logs on failure
         if: failure()
