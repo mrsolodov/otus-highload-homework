@@ -1,0 +1,35 @@
+GitHub Actions run: https://github.com/mrsolodov/otus-highload-homework/actions/runs/40460149712
+Commit tested: cb021974fc3181388be6c71278bb36f77fc87a64
+
+pxc1: size=1 status=Primary ready=ON state=Synced
+pxc1: size=2 status=Primary ready=ON state=Synced
+pxc2: size=2 status=Primary ready=ON state=Synced
+pxc1: size=3 status=Primary ready=ON state=Synced
+pxc2: size=3 status=Primary ready=ON state=Synced
+pxc3: size=3 status=Primary ready=ON state=Synced
+pxc1: request id=1001 backend=app1
+pxc2: request id=1001 backend=app1
+pxc3: request id=1001 backend=app1
+Stopping pxc2 to verify quorum and writes on surviving nodes.
+pxc1: size=2 status=Primary ready=ON state=Synced
+pxc3: size=2 status=Primary ready=ON state=Synced
+pxc1: request id=1002 backend=app2
+pxc1: size=3 status=Primary ready=ON state=Synced
+pxc1: request id=1001 backend=app1
+pxc1: request id=1002 backend=app2
+pxc2: size=3 status=Primary ready=ON state=Synced
+pxc2: request id=1001 backend=app1
+pxc2: request id=1002 backend=app2
+pxc3: size=3 status=Primary ready=ON state=Synced
+pxc3: request id=1001 backend=app1
+pxc3: request id=1002 backend=app2
+
+PXC cluster verification
+Schema: otusapp.requests (same logical table as homework 07)
+All nodes: Primary / Synced / ready ON / size 3
+After pxc2 stopped: surviving nodes Primary / Synced / size 2
+Write to pxc3 while pxc2 stopped: visible on pxc1
+After pxc2 restarted: both test rows visible on every node
+pxc1: 2
+pxc2: 2
+pxc3: 2

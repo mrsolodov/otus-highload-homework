@@ -1,0 +1,80 @@
+name: otus-pxc
+
+secrets:
+  mysql_root_password:
+    file: ./secrets/mysql_root_password
+  xtrabackup_password:
+    file: ./secrets/xtrabackup_password
+
+x-pxc: &pxc
+  image: percona/percona-xtradb-cluster:8.4
+  environment:
+    MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_password
+    XTRABACKUP_PASSWORD_FILE: /run/secrets/xtrabackup_password
+    CLUSTER_NAME: otus-pxc
+  secrets:
+    - mysql_root_password
+    - xtrabackup_password
+  networks:
+    - cluster
+  healthcheck:
+    # The image briefly starts a socket-only MySQL during initialization.
+    # TCP is available only after the final server starts.
+    test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1"]
+    interval: 10s
+    timeout: 5s
+    retries: 20
+    start_period: 40s
+  deploy:
+    resources:
+      limits:
+        memory: 3G
+
+services:
+  pxc1:
+    <<: *pxc
+    hostname: pxc1
+    command: ["--wsrep-new-cluster"]
+    volumes:
+      - pxc1-data:/var/lib/mysql
+      - ./certs:/etc/mysql/certs:ro
+      - ./conf.d:/etc/percona-xtradb-cluster.conf.d:ro
+  pxc2:
+    <<: *pxc
+    hostname: pxc2
+    environment:
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_password
+      XTRABACKUP_PASSWORD_FILE: /run/secrets/xtrabackup_password
+      CLUSTER_NAME: otus-pxc
+      CLUSTER_JOIN: pxc1
+    depends_on:
+      pxc1:
+        condition: service_healthy
+    volumes:
+      - pxc2-data:/var/lib/mysql
+      - ./certs:/etc/mysql/certs:ro
+      - ./conf.d:/etc/percona-xtradb-cluster.conf.d:ro
+  pxc3:
+    <<: *pxc
+    hostname: pxc3
+    environment:
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_password
+      XTRABACKUP_PASSWORD_FILE: /run/secrets/xtrabackup_password
+      CLUSTER_NAME: otus-pxc
+      CLUSTER_JOIN: pxc1
+    depends_on:
+      pxc1:
+        condition: service_healthy
+    volumes:
+      - pxc3-data:/var/lib/mysql
+      - ./certs:/etc/mysql/certs:ro
+      - ./conf.d:/etc/percona-xtradb-cluster.conf.d:ro
+
+networks:
+  cluster:
+    internal: true
+
+volumes:
+  pxc1-data:
+  pxc2-data:
+  pxc3-data:

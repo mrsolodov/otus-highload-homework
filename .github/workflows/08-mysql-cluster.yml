@@ -1,0 +1,41 @@
+name: 08 MySQL cluster
+
+on:
+  push:
+    paths:
+      - 'homework/08-mysql-cluster/**'
+      - '.github/workflows/08-mysql-cluster.yml'
+  pull_request:
+    paths:
+      - 'homework/08-mysql-cluster/**'
+      - '.github/workflows/08-mysql-cluster.yml'
+  workflow_dispatch:
+
+jobs:
+  pxc:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    defaults:
+      run:
+        working-directory: homework/08-mysql-cluster
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check Bash syntax
+        run: bash -n scripts/*.sh
+      - name: Show resources
+        run: free -h && docker compose version
+      - name: Run cluster and failover check
+        run: bash scripts/run-lab.sh
+      - name: Save verification result
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mysql-cluster-verification
+          path: homework/08-mysql-cluster/evidence/cluster-check.txt
+          if-no-files-found: error
+      - name: Logs on failure
+        if: failure()
+        run: docker compose ps && docker compose logs --no-color --tail=500 || true
+      - name: Remove CI containers and volumes
+        if: always()
+        run: docker compose down -v || true
