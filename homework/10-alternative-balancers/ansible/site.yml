@@ -1,0 +1,475 @@
+---
+- name: Prepare PostgreSQL and iSCSI target
+  hosts: database
+  become: true
+  vars:
+    db_password: "{{ lookup('file', playbook_dir + '/.secrets/db-password') | trim }}"
+    target_iqn: iqn.2026-10.ru.otus:highload-static
+  tasks:
+    - name: Install database and storage services
+      ansible.builtin.apt:
+        name: [postgresql, targetcli-fb, corosync, dlm-controld]
+        state: present
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Find PostgreSQL configuration
+      ansible.builtin.find:
+        paths: /etc/postgresql
+        patterns: postgresql.conf
+        recurse: true
+      register: postgres_config
+
+    - name: Confirm PostgreSQL configuration exists
+      ansible.builtin.assert:
+        that: postgres_config.matched == 1
+
+    - name: Listen on private network
+      ansible.builtin.lineinfile:
+        path: "{{ postgres_config.files[0].path }}"
+        regexp: '^#?listen_addresses\s*='
+        line: "listen_addresses = '192.168.56.30'"
+      notify: Restart PostgreSQL
+
+    - name: Permit only the application subnet with password authentication
+      ansible.builtin.lineinfile:
+        path: "{{ postgres_config.files[0].path | dirname }}/pg_hba.conf"
+        line: 'host otusapp otusapp 192.168.56.0/24 scram-sha-256'
+        insertafter: EOF
+      notify: Restart PostgreSQL
+
+    - name: Apply PostgreSQL network configuration
+      ansible.builtin.meta: flush_handlers
+
+    - name: Check database role
+      ansible.builtin.command: runuser -u postgres -- psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='otusapp'"
+      register: db_role
+      changed_when: false
+
+    - name: Create application role
+      ansible.builtin.command:
+        argv: [runuser, -u, postgres, --, psql, -v, ON_ERROR_STOP=1, -c, "CREATE ROLE otusapp LOGIN PASSWORD '{{ db_password }}'"]
+      when: db_role.stdout | trim != '1'
+      no_log: true
+
+    - name: Check application database
+      ansible.builtin.command: runuser -u postgres -- psql -tAc "SELECT 1 FROM pg_database WHERE datname='otusapp'"
+      register: app_db
+      changed_when: false
+
+    - name: Create application database
+      ansible.builtin.command: runuser -u postgres -- createdb -O otusapp otusapp
+      when: app_db.stdout | trim != '1'
+
+    - name: Check application table
+      ansible.builtin.command: runuser -u postgres -- psql -d otusapp -tAc "SELECT to_regclass('public.requests') IS NOT NULL"
+      register: db_table
+      changed_when: false
+
+    - name: Create application table
+      ansible.builtin.command: runuser -u postgres -- psql -d otusapp -v ON_ERROR_STOP=1 -c 'CREATE TABLE requests (id bigserial PRIMARY KEY, backend text NOT NULL, created_at timestamptz NOT NULL DEFAULT now())'
+      when: db_table.stdout | trim != 't'
+
+    - name: Grant table and sequence privileges
+      ansible.builtin.command: runuser -u postgres -- psql -d otusapp -v ON_ERROR_STOP=1 -c 'GRANT SELECT, INSERT ON requests TO otusapp; GRANT USAGE ON SEQUENCE requests_id_seq TO otusapp'
+      changed_when: false
+
+    - name: Check file-backed iSCSI volume
+      ansible.builtin.command: targetcli /backstores/fileio/sharedstatic ls
+      register: target_backstore
+      changed_when: false
+      failed_when: false
+
+    - name: Create file-backed iSCSI volume
+      ansible.builtin.command:
+        argv: [targetcli, /backstores/fileio, create, name=sharedstatic, file_or_dev=/var/lib/otus-static.img, size=2G]
+      when: target_backstore.rc != 0
+
+    - name: Check iSCSI target
+      ansible.builtin.command: "targetcli /iscsi/{{ target_iqn }} ls"
+      register: target_check
+      changed_when: false
+      failed_when: false
+
+    - name: Create iSCSI target
+      ansible.builtin.command:
+        argv: [targetcli, /iscsi, create, "{{ target_iqn }}"]
+      when: target_check.rc != 0
+
+    - name: Check target LUN
+      ansible.builtin.shell: "targetcli /iscsi/{{ target_iqn }}/tpg1/luns ls | grep -F sharedstatic"
+      register: target_lun
+      changed_when: false
+      failed_when: false
+
+    - name: Export iSCSI LUN
+      ansible.builtin.command:
+        argv: [targetcli, "/iscsi/{{ target_iqn }}/tpg1/luns", create, /backstores/fileio/sharedstatic]
+      when: target_lun.rc != 0
+
+    - name: Check wildcard portal
+      ansible.builtin.shell: "targetcli /iscsi/{{ target_iqn }}/tpg1/portals ls | grep -F 0.0.0.0"
+      register: wildcard_portal
+      changed_when: false
+      failed_when: false
+
+    - name: Remove wildcard portal
+      ansible.builtin.command:
+        argv: [targetcli, "/iscsi/{{ target_iqn }}/tpg1/portals", delete, '0.0.0.0', '3260']
+      when: wildcard_portal.rc == 0
+
+    - name: Check private portal
+      ansible.builtin.shell: "targetcli /iscsi/{{ target_iqn }}/tpg1/portals ls | grep -F 192.168.56.30"
+      register: private_portal
+      changed_when: false
+      failed_when: false
+
+    - name: Listen for iSCSI only on private IP
+      ansible.builtin.command:
+        argv: [targetcli, "/iscsi/{{ target_iqn }}/tpg1/portals", create, '192.168.56.30', '3260']
+      when: private_portal.rc != 0
+
+    - name: Configure training-only dynamic target ACLs
+      ansible.builtin.command:
+        argv: [targetcli, "/iscsi/{{ target_iqn }}/tpg1", set, attribute, authentication=0, generate_node_acls=1, cache_dynamic_acls=1, demo_mode_write_protect=0]
+      changed_when: false
+
+    - name: Save iSCSI configuration
+      ansible.builtin.command: targetcli saveconfig
+      changed_when: false
+
+  handlers:
+    - name: Restart PostgreSQL
+      ansible.builtin.service:
+        name: postgresql
+        state: restarted
+
+- name: Form three-vote storage cluster
+  hosts: storage_cluster
+  become: true
+  tasks:
+    - name: Install Corosync and DLM
+      ansible.builtin.apt:
+        name: [corosync, dlm-controld]
+        state: present
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Check Corosync authentication key
+      ansible.builtin.stat:
+        path: /etc/corosync/authkey
+      delegate_to: db1
+      run_once: true
+      register: corosync_key
+
+    - name: Generate Corosync authentication key
+      ansible.builtin.command: corosync-keygen -l
+      delegate_to: db1
+      run_once: true
+      when: not corosync_key.stat.exists
+
+    - name: Read Corosync authentication key
+      ansible.builtin.slurp:
+        src: /etc/corosync/authkey
+      delegate_to: db1
+      run_once: true
+      register: corosync_key_source
+      no_log: true
+
+    - name: Distribute Corosync authentication key
+      ansible.builtin.copy:
+        content: "{{ corosync_key_source.content | b64decode }}"
+        dest: /etc/corosync/authkey
+        owner: root
+        group: root
+        mode: '0400'
+      notify: Restart Corosync
+      no_log: true
+
+    - name: Configure three-vote cluster
+      ansible.builtin.template:
+        src: corosync.conf.j2
+        dest: /etc/corosync/corosync.conf
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Restart Corosync
+
+    - name: Apply Corosync configuration
+      ansible.builtin.meta: flush_handlers
+
+    - name: Ensure DLM is active
+      ansible.builtin.systemd:
+        name: dlm
+        state: started
+        enabled: true
+
+    - name: Wait for quorum
+      ansible.builtin.shell: corosync-quorumtool -s | grep -q 'Quorate:.*Yes'
+      register: quorum
+      retries: 25
+      delay: 4
+      until: quorum.rc == 0
+      changed_when: false
+
+  handlers:
+    - name: Restart Corosync
+      ansible.builtin.systemd:
+        name: corosync
+        state: restarted
+        enabled: true
+
+- name: Attach and mount shared GFS2 static storage
+  hosts: backends
+  become: true
+  vars:
+    target_iqn: iqn.2026-10.ru.otus:highload-static
+    shared_device: /dev/disk/by-path/ip-192.168.56.30:3260-iscsi-iqn.2026-10.ru.otus:highload-static-lun-0
+  tasks:
+    - name: Install application and GFS2 packages
+      ansible.builtin.apt:
+        name:
+          - open-iscsi
+          - gfs2-utils
+          - linux-modules-extra-{{ ansible_kernel }}
+          - uwsgi-core
+          - uwsgi-plugin-python3
+          - python3-psycopg2
+        state: present
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Load GFS2 kernel module
+      ansible.builtin.command: modprobe gfs2
+      changed_when: false
+
+    - name: Persist GFS2 kernel module
+      ansible.builtin.copy:
+        dest: /etc/modules-load.d/gfs2.conf
+        content: "gfs2\n"
+        mode: '0644'
+
+    - name: Discover shared iSCSI target
+      ansible.builtin.command: iscsiadm -m discovery -t sendtargets -p 192.168.56.30:3260
+      changed_when: false
+
+    - name: Enable automatic iSCSI session recovery
+      ansible.builtin.command:
+        argv: [iscsiadm, -m, node, -T, "{{ target_iqn }}", -p, '192.168.56.30:3260', --op, update, -n, node.startup, -v, automatic]
+      changed_when: false
+
+    - name: Check iSCSI session
+      ansible.builtin.shell: "iscsiadm -m session | grep -F '{{ target_iqn }}'"
+      register: iscsi_session
+      failed_when: false
+      changed_when: false
+
+    - name: Log in to shared iSCSI LUN
+      ansible.builtin.command:
+        argv: [iscsiadm, -m, node, -T, "{{ target_iqn }}", -p, '192.168.56.30:3260', --login]
+      when: iscsi_session.rc != 0
+
+    - name: Wait for stable LUN path
+      ansible.builtin.wait_for:
+        path: "{{ shared_device }}"
+        timeout: 60
+
+    - name: Check GFS2 signature on the first backend
+      ansible.builtin.command: "blkid -s TYPE -o value {{ shared_device }}"
+      register: fs_type
+      failed_when: false
+      changed_when: false
+      delegate_to: app1
+      run_once: true
+
+    - name: Protect any existing non-GFS2 filesystem
+      ansible.builtin.assert:
+        that: (fs_type.stdout | trim) in ['', 'gfs2']
+        fail_msg: 'Shared iSCSI device has an unexpected filesystem; refusing to format it'
+      run_once: true
+
+    - name: Format shared LUN with two GFS2 journals
+      ansible.builtin.command:
+        argv: [mkfs.gfs2, -O, -p, lock_dlm, -t, otus_web:static, -j, '2', "{{ shared_device }}"]
+      when: fs_type.stdout | trim != 'gfs2'
+      delegate_to: app1
+      run_once: true
+
+    - name: Create static mount point
+      ansible.builtin.file:
+        path: /srv/otus-static
+        state: directory
+        mode: '0755'
+
+    - name: Persist shared static mount
+      ansible.builtin.lineinfile:
+        path: /etc/fstab
+        line: '{{ shared_device }} /srv/otus-static gfs2 noatime,_netdev 0 0'
+
+    - name: Check shared mount
+      ansible.builtin.command: mountpoint -q /srv/otus-static
+      register: shared_mount
+      changed_when: false
+      failed_when: false
+
+    - name: Mount shared static directory
+      ansible.builtin.command: mount /srv/otus-static
+      when: shared_mount.rc != 0
+
+    - name: Create static test page on shared volume
+      ansible.builtin.copy:
+        dest: /srv/otus-static/index.html
+        content: "<!doctype html><html lang=\"ru\"><meta charset=\"utf-8\"><h1>Shared GFS2 static page</h1></html>\n"
+        mode: '0644'
+      delegate_to: app1
+      run_once: true
+
+- name: Start two uWSGI backends
+  hosts: backends
+  become: true
+  vars:
+    db_password: "{{ lookup('file', playbook_dir + '/.secrets/db-password') | trim }}"
+  tasks:
+    - name: Create application directory
+      ansible.builtin.file:
+        path: /opt/otus-web
+        state: directory
+        mode: '0755'
+
+    - name: Install WSGI application
+      ansible.builtin.copy:
+        src: app.py
+        dest: /opt/otus-web/app.py
+        mode: '0644'
+      notify: Restart application
+
+    - name: Install database secret readable by uWSGI
+      ansible.builtin.copy:
+        dest: /opt/otus-web/db-password
+        content: "{{ db_password }}\n"
+        owner: root
+        group: www-data
+        mode: '0640'
+      notify: Restart application
+      no_log: true
+
+    - name: Install uWSGI configuration
+      ansible.builtin.template:
+        src: app.ini.j2
+        dest: /opt/otus-web/app.ini
+        mode: '0644'
+      notify: Restart application
+
+    - name: Install application service
+      ansible.builtin.copy:
+        src: otus-app.service
+        dest: /etc/systemd/system/otus-app.service
+        mode: '0644'
+      notify: Restart application
+
+    - name: Start application
+      ansible.builtin.systemd:
+        name: otus-app
+        state: started
+        enabled: true
+        daemon_reload: true
+
+    - name: Apply application updates
+      ansible.builtin.meta: flush_handlers
+
+    - name: Wait for uWSGI socket
+      ansible.builtin.wait_for:
+        host: "{{ private_ip }}"
+        port: 3031
+        timeout: 30
+
+  handlers:
+    - name: Restart application
+      ansible.builtin.systemd:
+        name: otus-app
+        state: restarted
+        daemon_reload: true
+
+- name: Start Nginx frontends and Keepalived VIP
+  hosts: frontends
+  become: true
+  tasks:
+    - name: Install Nginx, Keepalived and curl
+      ansible.builtin.apt:
+        name: [nginx, keepalived, curl]
+        state: present
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Install proxy site
+      ansible.builtin.template:
+        src: nginx.conf.j2
+        dest: /etc/nginx/sites-available/otus-web
+        mode: '0644'
+      notify: Reload Nginx
+
+    - name: Enable proxy site
+      ansible.builtin.file:
+        src: /etc/nginx/sites-available/otus-web
+        dest: /etc/nginx/sites-enabled/otus-web
+        state: link
+      notify: Reload Nginx
+
+    - name: Remove default site
+      ansible.builtin.file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+      notify: Reload Nginx
+
+    - name: Validate Nginx configuration
+      ansible.builtin.command: nginx -t
+      changed_when: false
+
+    - name: Start Nginx
+      ansible.builtin.systemd:
+        name: nginx
+        state: started
+        enabled: true
+
+    - name: Apply Nginx updates
+      ansible.builtin.meta: flush_handlers
+
+    - name: Detect private network interface
+      ansible.builtin.command: "ip -o -4 addr show to {{ private_ip }}/32"
+      register: private_address
+      changed_when: false
+
+    - name: Verify private interface was detected
+      ansible.builtin.assert:
+        that: private_address.stdout.split() | length > 1
+
+    - name: Install Keepalived configuration
+      ansible.builtin.template:
+        src: keepalived.conf.j2
+        dest: /etc/keepalived/keepalived.conf
+        mode: '0644'
+      notify: Restart Keepalived
+
+    - name: Check Keepalived configuration
+      ansible.builtin.command: keepalived -t -f /etc/keepalived/keepalived.conf
+      changed_when: false
+
+    - name: Start Keepalived
+      ansible.builtin.systemd:
+        name: keepalived
+        state: started
+        enabled: true
+
+    - name: Apply Keepalived updates
+      ansible.builtin.meta: flush_handlers
+
+  handlers:
+    - name: Reload Nginx
+      ansible.builtin.systemd:
+        name: nginx
+        state: reloaded
+
+    - name: Restart Keepalived
+      ansible.builtin.systemd:
+        name: keepalived
+        state: restarted

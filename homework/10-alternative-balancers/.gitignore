@@ -1,0 +1,10 @@
+.vagrant/
+.secrets/
+ansible/.secrets/
+__pycache__/
+ansible/inventory.local.ini
+ansible/inventory.ci.ini
+evidence/*.json
+!evidence/ci-lab-results.json
+evidence/*.txt
+!evidence/.gitkeep

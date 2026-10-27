@@ -10,9 +10,10 @@
 | 05 | Общий диск по iSCSI, multipath и GFS2 на трёх узлах | [`homework/05-iscsi-multipath-gfs2`](homework/05-iscsi-multipath-gfs2/) |
 | 06 | Балансировка Nginx: round-robin и consistent hash на локальных ВМ | [ветка `homework/06-nginx-balancing`](https://github.com/mrsolodov/otus-highload-homework/tree/homework/06-nginx-balancing/homework/06-nginx-balancing) |
 | 07 | Веб-приложение с двумя фронтендами, двумя бэкендами и PostgreSQL; подготовленный локальный стенд | [ветка `homework/07-highload-web`](https://github.com/mrsolodov/otus-highload-homework/tree/homework/07-highload-web/homework/07-highload-web) |
+| 10 | ДЗ урока «Альтернативные балансировщики»: Nginx, Keepalived, два бэкенда, PostgreSQL и GFS2 | [`homework/10-alternative-balancers`](homework/10-alternative-balancers/) |
 | 11 | MySQL-кластер Percona XtraDB Cluster из трёх узлов | [`homework/11-mysql-cluster`](homework/11-mysql-cluster/) |
 
-Работы 03, 05 и 11 находятся в `main`; работы 06 и 07 доступны в отдельных ветках.
+Работы 03, 05, 10 и 11 находятся в `main`; работы 06 и 07 доступны в отдельных ветках.
 
 ## Секреты и локальные файлы
 
