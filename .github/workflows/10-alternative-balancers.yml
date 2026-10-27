@@ -1,0 +1,93 @@
+name: 10 Alternative balancers lab
+
+on:
+  push:
+    paths:
+      - 'homework/10-alternative-balancers/**'
+      - '.github/workflows/10-alternative-balancers.yml'
+  pull_request:
+    paths:
+      - 'homework/10-alternative-balancers/**'
+      - '.github/workflows/10-alternative-balancers.yml'
+
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check whether hosted runner supports local VMs
+        run: |
+          if [ -e /dev/kvm ]; then ls -l /dev/kvm; else echo 'KVM_UNAVAILABLE'; fi
+          free -h
+      - name: Check Vagrantfile and application
+        run: |
+          ruby -c homework/10-alternative-balancers/Vagrantfile
+          python3 -m py_compile homework/10-alternative-balancers/ansible/files/app.py
+          bash -n homework/10-alternative-balancers/scripts/prepare-wsl.sh
+          bash -n homework/10-alternative-balancers/scripts/deploy-wsl.sh
+      - name: Install Ansible core
+        run: python3 -m pip install 'ansible-core>=2.16,<2.19'
+      - name: Check Ansible syntax
+        working-directory: homework/10-alternative-balancers/ansible
+        run: ansible-playbook -i inventory.ini --syntax-check site.yml
+      - name: Check PowerShell syntax
+        shell: pwsh
+        run: |
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile(
+            (Resolve-Path "homework/10-alternative-balancers/run-local-lab.ps1").Path,
+            [ref]$tokens,
+            [ref]$errors
+          ) | Out-Null
+          if ($errors.Count -gt 0) {
+            $errors | Format-List | Out-String | Write-Error
+            exit 1
+          }
+  integration:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install local VM tools
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          sudo -E timeout 240 apt-get update
+          sudo -E timeout 480 apt-get install -y libvirt-daemon-system libvirt-clients qemu-system-x86 qemu-utils cloud-image-utils virtinst
+          sudo systemctl start libvirtd
+          virsh --version
+          df -h /
+          free -h
+      - name: Start five Ubuntu VMs
+        working-directory: homework/10-alternative-balancers
+        run: sudo bash scripts/ci-vm-lab.sh
+      - name: Configure services
+        working-directory: homework/10-alternative-balancers/ansible
+        run: |
+          python3 -m pip install 'ansible-core>=2.16,<2.19'
+          mkdir -p .secrets
+          python3 -c 'import secrets; open(".secrets/db-password","w").write(secrets.token_urlsafe(24))'
+          ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.ci.ini site.yml
+      - name: Verify VIP, database, GFS2 and failover
+        working-directory: homework/10-alternative-balancers
+        env:
+          NO_PROXY: 192.168.56.100
+        run: python3 scripts/verify-ci.py
+      - name: Upload lab results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lesson-10-local-lab
+          path: homework/10-alternative-balancers/evidence/ci-lab-results.json
+          if-no-files-found: ignore
+      - name: VM status
+        if: always()
+        run: sudo virsh list --all || true
+      - name: Destroy VMs
+        if: always()
+        run: |
+          for name in nginx1 nginx2 app1 app2 db1; do
+            sudo virsh destroy "otus10-$name" || true
+            sudo virsh undefine "otus10-$name" || true
+          done

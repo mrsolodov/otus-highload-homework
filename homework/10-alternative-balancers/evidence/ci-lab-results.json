@@ -1,0 +1,19 @@
+{
+  "verified": true,
+  "checks": {
+    "initial": {
+      "frontend": "nginx1",
+      "backend": "app1"
+    },
+    "shared_static": "app2",
+    "gfs2_on_both_backends": true,
+    "backend_failover": true,
+    "backend_recovery": [
+      "app1",
+      "app2"
+    ],
+    "frontend_failover": "nginx2",
+    "frontend_recovery": "nginx1",
+    "database_requests": 49
+  }
+}
