@@ -1,0 +1,7 @@
+certs/
+secrets/
+*.log
+data-pxc*/
+evidence/*.txt
+!evidence/cluster-check.txt
+evidence/*.json
