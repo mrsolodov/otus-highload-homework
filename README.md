@@ -12,7 +12,7 @@
 | 07 | Веб-приложение с двумя фронтендами, двумя бэкендами и PostgreSQL; подготовленный локальный стенд | [ветка `homework/07-highload-web`](https://github.com/mrsolodov/otus-highload-homework/tree/homework/07-highload-web/homework/07-highload-web) |
 | 08 | MySQL-кластер Percona XtraDB Cluster из трёх узлов | [`homework/08-mysql-cluster`](homework/08-mysql-cluster/) |
 
-Работы 03 и 05 уже находятся в `main`. Работы 06 и 07 пока доступны в отдельных ветках. Работа 08 добавлена в эту ветку; [PR #2](https://github.com/mrsolodov/otus-highload-homework/pull/2) открыт для проверки.
+Работы 03, 05 и 08 находятся в `main`; работы 06 и 07 доступны в отдельных ветках.
 
 ## Секреты и локальные файлы
 
