@@ -1,0 +1,17 @@
+Initial primary: pg3; PostgreSQL members: pg1 pg2 pg3
+pg1 in recovery: t
+pg2 in recovery: t
+pg3 in recovery: f
+Write route before failover: f
+Table after creation: otusapp.requests
+First write through HAProxy is visible on all nodes.
+Stopped former primary: pg3
+Promoted primary: pg2; remaining members: pg1 pg2
+Waiting for HAProxy to route writes (attempt 1)
+Second write through HAProxy is visible on both surviving nodes.
+Former primary pg3 rejoined as a replica.
+Current primary: pg2; rows on all nodes: 2
+http://etcd2:2379 is healthy: successfully committed proposal: took = 3.852983ms
+http://etcd3:2379 is healthy: successfully committed proposal: took = 4.445657ms
+http://etcd1:2379 is healthy: successfully committed proposal: took = 4.178849ms
+Verification passed.

@@ -12,8 +12,9 @@
 | 07 | Веб-приложение с двумя фронтендами, двумя бэкендами и PostgreSQL; подготовленный локальный стенд | [ветка `homework/07-highload-web`](https://github.com/mrsolodov/otus-highload-homework/tree/homework/07-highload-web/homework/07-highload-web) |
 | 10 | ДЗ урока «Альтернативные балансировщики»: Nginx, Keepalived, два бэкенда, PostgreSQL и GFS2 | [`homework/10-alternative-balancers`](homework/10-alternative-balancers/) |
 | 11 | MySQL-кластер Percona XtraDB Cluster из трёх узлов | [`homework/11-mysql-cluster`](homework/11-mysql-cluster/) |
+| 12 | PostgreSQL-кластер с Patroni, etcd и HAProxy | [`homework/12-postgresql-cluster`](homework/12-postgresql-cluster/) |
 
-Работы 03, 05, 10 и 11 находятся в `main`; работы 06 и 07 доступны в отдельных ветках.
+Работы 03, 05, 10, 11 и 12 находятся в `main`; работы 06 и 07 доступны в отдельных ветках.
 
 ## Секреты и локальные файлы
 
