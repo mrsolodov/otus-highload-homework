@@ -1,0 +1,43 @@
+name: 12 PostgreSQL cluster
+
+on:
+  push:
+    paths:
+      - 'homework/12-postgresql-cluster/**'
+      - '.github/workflows/12-postgresql-cluster.yml'
+  pull_request:
+    paths:
+      - 'homework/12-postgresql-cluster/**'
+      - '.github/workflows/12-postgresql-cluster.yml'
+  workflow_dispatch:
+
+jobs:
+  patroni:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    defaults:
+      run:
+        working-directory: homework/12-postgresql-cluster
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check shell and Compose syntax
+        run: |
+          bash -n scripts/run-lab.sh
+          printf 'POSTGRES_PASSWORD=check\nREPLICATION_PASSWORD=check\n' > .env
+          docker compose config --quiet
+          rm .env
+      - name: Run replication and failover check
+        run: timeout 900 bash scripts/run-lab.sh
+      - name: Save verification
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: postgresql-cluster-verification
+          path: homework/12-postgresql-cluster/evidence/cluster-check.txt
+          if-no-files-found: error
+      - name: Logs on failure
+        if: failure()
+        run: docker compose ps && docker compose logs --no-color --tail=250 || true
+      - name: Remove CI containers and volumes
+        if: always()
+        run: docker compose down -v || true
