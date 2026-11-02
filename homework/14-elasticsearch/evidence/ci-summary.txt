@@ -1,0 +1,15 @@
+GitHub Actions: https://github.com/mrsolodov/otus-highload-homework/actions/runs/41495494148
+Artifact: https://github.com/mrsolodov/otus-highload-homework/actions/runs/41495494148/artifacts/13165903789
+
+Three-node cluster: ready after 13 checks
+Both frontends indexed: ready after 6 checks
+Cluster: green, nodes=3, shards=2, web1=13, web2=13
+Kibana data view: otus-web-*
+Discover data view is available
+Stopped node: es2
+Cluster recovered with two nodes: ready after 11 checks
+Logs continue while one node is down: ready after 7 checks
+Cluster: green, nodes=2, shards=2, web1=17, web2=17
+Three-node cluster restored: ready after 4 checks
+Cluster: green, nodes=3, shards=2, web1=17, web2=17
+Checks passed.

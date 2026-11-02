@@ -1,0 +1,24 @@
+filebeat.inputs:
+  - type: filestream
+    id: otus-web1
+    enabled: true
+    paths: [/logs/web1/access.log]
+    parsers:
+      - ndjson:
+          target: ""
+          add_error_key: true
+  - type: filestream
+    id: otus-web2
+    enabled: true
+    paths: [/logs/web2/access.log]
+    parsers:
+      - ndjson:
+          target: ""
+          add_error_key: true
+
+setup.ilm.enabled: false
+setup.template.enabled: false
+output.elasticsearch:
+  hosts: ["http://es1:9200", "http://es2:9200", "http://es3:9200"]
+  index: "otus-web-%{+yyyy.MM.dd}"
+  loadbalance: true
