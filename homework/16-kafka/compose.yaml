@@ -1,0 +1,132 @@
+x-es-common: &es-common
+  image: docker.elastic.co/elasticsearch/elasticsearch:8.19.0
+  environment: &es-env
+    cluster.name: otus-logs
+    discovery.seed_hosts: es1,es2,es3
+    cluster.initial_master_nodes: es1,es2,es3
+    xpack.security.enabled: "false"
+    ES_JAVA_OPTS: -Xms512m -Xmx512m
+  networks: [logs]
+  restart: unless-stopped
+
+services:
+  es1:
+    <<: *es-common
+    environment:
+      <<: *es-env
+      node.name: es1
+    ports:
+      - "127.0.0.1:19200:9200"
+    volumes:
+      - es1-data:/usr/share/elasticsearch/data
+  es2:
+    <<: *es-common
+    environment:
+      <<: *es-env
+      node.name: es2
+    volumes:
+      - es2-data:/usr/share/elasticsearch/data
+  es3:
+    <<: *es-common
+    environment:
+      <<: *es-env
+      node.name: es3
+    volumes:
+      - es3-data:/usr/share/elasticsearch/data
+
+  web1:
+    image: nginx:1.27.5-alpine
+    hostname: web1
+    ports:
+      - "127.0.0.1:18081:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - web1-logs:/var/log/otus
+    networks: [logs]
+  web2:
+    image: nginx:1.27.5-alpine
+    hostname: web2
+    ports:
+      - "127.0.0.1:18082:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - web2-logs:/var/log/otus
+    networks: [logs]
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:8.19.0
+    user: root
+    command: ["filebeat", "-e", "--strict.perms=false"]
+    volumes:
+      - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - web1-logs:/logs/web1:ro
+      - web2-logs:/logs/web2:ro
+      - filebeat-data:/usr/share/filebeat/data
+    networks: [logs]
+    restart: unless-stopped
+
+  logstash-ingest:
+    image: docker.elastic.co/logstash/logstash:8.19.0
+    environment:
+      LS_JAVA_OPTS: -Xms384m -Xmx384m
+      XPACK_MONITORING_ENABLED: "false"
+    volumes:
+      - ./logstash/ingest.conf:/usr/share/logstash/pipeline/ingest.conf:ro
+    networks: [logs]
+    restart: unless-stopped
+
+  kafka:
+    image: confluentinc/cp-kafka:7.8.1
+    environment:
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+      KAFKA_LOG_RETENTION_HOURS: 24
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    networks: [logs]
+    restart: unless-stopped
+
+  logstash-indexer:
+    image: docker.elastic.co/logstash/logstash:8.19.0
+    environment:
+      LS_JAVA_OPTS: -Xms384m -Xmx384m
+      XPACK_MONITORING_ENABLED: "false"
+    volumes:
+      - ./logstash/indexer.conf:/usr/share/logstash/pipeline/indexer.conf:ro
+    networks: [logs]
+    restart: unless-stopped
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.19.0
+    environment:
+      ELASTICSEARCH_HOSTS: '["http://es1:9200","http://es2:9200","http://es3:9200"]'
+      SERVER_HOST: 0.0.0.0
+      XPACK_SECURITY_ENABLED: "false"
+      NODE_OPTIONS: --max-old-space-size=1024
+    ports:
+      - "127.0.0.1:15601:5601"
+    networks: [logs]
+    restart: unless-stopped
+
+networks:
+  logs:
+
+volumes:
+  es1-data:
+  es2-data:
+  es3-data:
+  web1-logs:
+  web2-logs:
+  filebeat-data:
+  kafka-data:

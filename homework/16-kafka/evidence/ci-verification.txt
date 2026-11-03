@@ -1,0 +1,15 @@
+GitHub Actions: https://github.com/mrsolodov/otus-highload-homework/actions/runs/41616767174
+Job: log-queue — success
+
+Topic: otus-web-logs, partitions: 3, replication factor: 1
+Initial: Cluster green, nodes=3, shards=2, counts={'web1': 13, 'web2': 13}, buffered={'web1': 0, 'web2': 0}
+Kibana data view: otus-web-*
+
+Consumer stopped:
+Kafka end offset before buffered requests: 26
+Kafka end offset while consumer is stopped: 38
+Elasticsearch: counts={'web1': 13, 'web2': 13}, buffered={'web1': 0, 'web2': 0}
+
+Consumer restarted:
+Cluster green, nodes=3, shards=2, counts={'web1': 19, 'web2': 19}, buffered={'web1': 6, 'web2': 6}
+Checks passed. Kafka retained events while the consumer was stopped.

@@ -1,0 +1,20 @@
+filebeat.inputs:
+  - type: filestream
+    id: otus-web1
+    enabled: true
+    paths: [/logs/web1/access.log]
+    parsers:
+      - ndjson:
+          target: ""
+          add_error_key: true
+  - type: filestream
+    id: otus-web2
+    enabled: true
+    paths: [/logs/web2/access.log]
+    parsers:
+      - ndjson:
+          target: ""
+          add_error_key: true
+
+output.logstash:
+  hosts: ["logstash-ingest:5044"]

@@ -1,0 +1,20 @@
+{
+  "index_patterns": ["otus-web-*"],
+  "template": {
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 1
+    },
+    "mappings": {
+      "properties": {
+        "event_time": {"type": "date"},
+        "source_host": {"type": "keyword"},
+        "uri": {"type": "keyword"},
+        "method": {"type": "keyword"},
+        "status": {"type": "integer"},
+        "request_time": {"type": "float"},
+        "request_id": {"type": "keyword"}
+      }
+    }
+  }
+}
