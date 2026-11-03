@@ -1,0 +1,46 @@
+name: 16 Kafka logs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'homework/16-kafka/**'
+      - '.github/workflows/16-kafka.yml'
+  pull_request:
+    paths:
+      - 'homework/16-kafka/**'
+      - '.github/workflows/16-kafka.yml'
+  workflow_dispatch:
+
+jobs:
+  log-queue:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      COMPOSE_PROJECT_NAME: otus_kafka16
+    defaults:
+      run:
+        working-directory: homework/16-kafka
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check syntax and kernel setting
+        run: |
+          bash -n scripts/run-lab.sh
+          python3 -m py_compile scripts/*.py
+          docker compose config --quiet
+          sudo sysctl -w vm.max_map_count=262144
+      - name: Verify Kafka buffering and delivery
+        run: timeout 1300 bash scripts/run-lab.sh
+      - name: Save verification
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kafka-log-verification
+          path: homework/16-kafka/evidence/cluster-check.txt
+          if-no-files-found: error
+      - name: Logs on failure
+        if: failure()
+        run: docker compose ps && docker compose logs --no-color --tail=100 || true
+      - name: Remove CI containers and volumes
+        if: always()
+        run: docker compose down -v --remove-orphans || true

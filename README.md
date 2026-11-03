@@ -14,8 +14,9 @@
 | 11 | MySQL-кластер Percona XtraDB Cluster из трёх узлов | [`homework/11-mysql-cluster`](homework/11-mysql-cluster/) |
 | 12 | PostgreSQL-кластер с Patroni, etcd и HAProxy | [`homework/12-postgresql-cluster`](homework/12-postgresql-cluster/) |
 | 14 | Сбор логов двух веб-узлов в кластер Elasticsearch и просмотр в Kibana | [`homework/14-elasticsearch`](homework/14-elasticsearch/) |
+| 16 | Kafka между двумя Logstash: очередь логов веб-узлов перед Elasticsearch | [`homework/16-kafka`](homework/16-kafka/) |
 
-Работы 03, 05, 10, 11, 12 и 14 находятся в `main`; работы 06 и 07 доступны в отдельных ветках.
+Работы 03, 05, 10, 11, 12, 14 и 16 находятся в `main`; работы 06 и 07 доступны в отдельных ветках.
 
 ## Секреты и локальные файлы
 
