@@ -1,0 +1,15 @@
+{
+  "services": [{
+    "id": "portal-web1",
+    "name": "portal",
+    "address": "172.29.16.11",
+    "port": 80,
+    "check": {
+      "id": "portal-web1-http",
+      "name": "web1 HTTP",
+      "http": "http://172.29.16.11/health",
+      "interval": "2s",
+      "timeout": "1s"
+    }
+  }]
+}
