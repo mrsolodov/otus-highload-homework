@@ -1,0 +1,70 @@
+x-consul-server: &consul-server
+  image: hashicorp/consul:1.21.3
+  restart: unless-stopped
+  networks: [lab]
+
+services:
+  consul1:
+    <<: *consul-server
+    hostname: consul1
+    command: [agent, -server, -bootstrap-expect=3, -ui, -client=0.0.0.0, -node=consul1, -retry-join=consul2, -retry-join=consul3]
+    ports:
+      - "127.0.0.1:18500:8500"
+      - "127.0.0.1:18600:8600/udp"
+    volumes: [consul1-data:/consul/data]
+  consul2:
+    <<: *consul-server
+    hostname: consul2
+    command: [agent, -server, -bootstrap-expect=3, -client=0.0.0.0, -node=consul2, -retry-join=consul1, -retry-join=consul3]
+    ports:
+      - "127.0.0.1:18501:8500"
+      - "127.0.0.1:18601:8600/udp"
+    volumes: [consul2-data:/consul/data]
+  consul3:
+    <<: *consul-server
+    hostname: consul3
+    command: [agent, -server, -bootstrap-expect=3, -client=0.0.0.0, -node=consul3, -retry-join=consul1, -retry-join=consul2]
+    volumes: [consul3-data:/consul/data]
+  web1:
+    image: nginx:1.27.5-alpine
+    hostname: web1
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      lab:
+        ipv4_address: 172.29.16.11
+    ports: ["127.0.0.1:18081:80"]
+  web2:
+    image: nginx:1.27.5-alpine
+    hostname: web2
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      lab:
+        ipv4_address: 172.29.16.12
+    ports: ["127.0.0.1:18082:80"]
+  web1-agent:
+    image: hashicorp/consul:1.21.3
+    command: [agent, -client=0.0.0.0, -node=web1-agent, -retry-join=consul1, -retry-join=consul2, -retry-join=consul3, -config-file=/consul/config/web.json]
+    volumes:
+      - ./consul/web1.json:/consul/config/web.json:ro
+    networks: [lab]
+    restart: unless-stopped
+  web2-agent:
+    image: hashicorp/consul:1.21.3
+    command: [agent, -client=0.0.0.0, -node=web2-agent, -retry-join=consul1, -retry-join=consul2, -retry-join=consul3, -config-file=/consul/config/web.json]
+    volumes:
+      - ./consul/web2.json:/consul/config/web.json:ro
+    networks: [lab]
+    restart: unless-stopped
+
+networks:
+  lab:
+    ipam:
+      config:
+        - subnet: 172.29.16.0/24
+
+volumes:
+  consul1-data:
+  consul2-data:
+  consul3-data:

@@ -1,0 +1,9 @@
+GitHub Actions: https://github.com/mrsolodov/otus-highload-homework/actions/runs/42002010427
+Job: consul-dns — success
+
+initial: raft voters=3, DNS=['172.29.16.11', '172.29.16.12'], healthy=['172.29.16.11', '172.29.16.12']
+web2-down: raft voters=3, DNS=['172.29.16.11'], healthy=['172.29.16.11']
+restored: raft voters=3, DNS=['172.29.16.11', '172.29.16.12'], healthy=['172.29.16.11', '172.29.16.12']
+consul1-down: query through consul2, raft voters=3, DNS=['172.29.16.11', '172.29.16.12']
+consul1-restored: DNS=['172.29.16.11', '172.29.16.12']
+Checks passed: health-filtered DNS and Consul server failover.
