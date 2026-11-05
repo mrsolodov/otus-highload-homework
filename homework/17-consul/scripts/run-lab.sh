@@ -2,7 +2,7 @@
 set -Eeuo pipefail
 
 cd "$(dirname "$0")/.."
-export COMPOSE_PROJECT_NAME=otus_consul16
+export COMPOSE_PROJECT_NAME=otus_consul17
 
 if [[ "${1:-}" == "--destroy" ]]; then
   docker compose down -v --remove-orphans

@@ -1,15 +1,15 @@
-name: 16 Consul DNS
+name: 17 Consul DNS
 
 on:
   pull_request:
     paths:
-      - 'homework/16-consul/**'
-      - '.github/workflows/16-consul.yml'
+      - 'homework/17-consul/**'
+      - '.github/workflows/17-consul.yml'
   push:
     branches: [main]
     paths:
-      - 'homework/16-consul/**'
-      - '.github/workflows/16-consul.yml'
+      - 'homework/17-consul/**'
+      - '.github/workflows/17-consul.yml'
   workflow_dispatch:
 
 jobs:
@@ -18,7 +18,7 @@ jobs:
     timeout-minutes: 25
     defaults:
       run:
-        working-directory: homework/16-consul
+        working-directory: homework/17-consul
     steps:
       - uses: actions/checkout@v4
       - name: Check syntax and Compose
@@ -35,7 +35,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: consul-dns-verification
-          path: homework/16-consul/evidence/lab-run.txt
+          path: homework/17-consul/evidence/lab-run.txt
           if-no-files-found: error
       - name: Diagnostic logs
         if: failure()
