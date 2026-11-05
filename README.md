@@ -15,9 +15,9 @@
 | 12 | PostgreSQL-кластер с Patroni, etcd и HAProxy | [`homework/12-postgresql-cluster`](homework/12-postgresql-cluster/) |
 | 14 | Сбор логов двух веб-узлов в кластер Elasticsearch и просмотр в Kibana | [`homework/14-elasticsearch`](homework/14-elasticsearch/) |
 | 16 | Kafka между двумя Logstash: очередь логов веб-узлов перед Elasticsearch | [`homework/16-kafka`](homework/16-kafka/) |
-| 16 | Consul: DNS веб-портала с health check и исключением недоступного узла | [`homework/16-consul`](homework/16-consul/) |
+| 17 | Consul: DNS веб-портала с health check и исключением недоступного узла | [`homework/17-consul`](homework/17-consul/) |
 
-Работы 03, 05, 10, 11, 12, 14 и 16 находятся в `main`; работы 06 и 07 доступны в отдельных ветках.
+Работы 03, 05, 10, 11, 12, 14, 16 и 17 находятся в `main`; работы 06 и 07 доступны в отдельных ветках.
 
 ## Секреты и локальные файлы
 
