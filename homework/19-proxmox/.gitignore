@@ -1,4 +1,5 @@
 .terraform/
+.local-lab/
 *.tfstate
 *.tfstate.*
 *.tfplan

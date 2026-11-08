@@ -13,6 +13,22 @@ on:
   workflow_dispatch:
 
 jobs:
+  powershell:
+    runs-on: windows-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Parse local lab setup script
+        shell: pwsh
+        run: |
+          $script = Join-Path $PWD 'homework/19-proxmox/prepare-local-lab.ps1'
+          $tokens = $null
+          $parseErrors = $null
+          [void][System.Management.Automation.Language.Parser]::ParseFile($script, [ref]$tokens, [ref]$parseErrors)
+          if ($parseErrors.Count -gt 0) {
+            $parseErrors | Format-List | Out-String | Write-Error
+            exit 1
+          }
   terraform:
     runs-on: ubuntu-latest
     timeout-minutes: 15

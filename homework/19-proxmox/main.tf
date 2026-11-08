@@ -34,7 +34,7 @@ resource "proxmox_virtual_environment_vm" "ubuntu" {
     datastore_id = var.vm_datastore_id
     import_from  = proxmox_download_file.ubuntu.id
     interface    = "virtio0"
-    size         = 20
+    size         = var.vm_disk_size_gb
     iothread     = true
     discard      = "on"
   }
