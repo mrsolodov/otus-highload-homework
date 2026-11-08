@@ -18,10 +18,14 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-      - name: Parse local lab setup script
-        shell: pwsh
+      - name: Parse local lab setup script in Windows PowerShell 5.1
+        shell: powershell
         run: |
           $script = Join-Path $PWD 'homework/19-proxmox/prepare-local-lab.ps1'
+          $bytes = [System.IO.File]::ReadAllBytes($script)
+          if (@($bytes | Where-Object { $_ -gt 127 }).Count -gt 0) {
+            throw 'The Windows PowerShell 5.1 script must remain ASCII or use a UTF-8 BOM.'
+          }
           $tokens = $null
           $parseErrors = $null
           [void][System.Management.Automation.Language.Parser]::ParseFile($script, [ref]$tokens, [ref]$parseErrors)

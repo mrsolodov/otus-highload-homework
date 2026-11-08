@@ -4,7 +4,7 @@ $ErrorActionPreference = 'Stop'
 
 $vbox = Join-Path $env:ProgramFiles 'Oracle\VirtualBox\VBoxManage.exe'
 if (-not (Test-Path -LiteralPath $vbox)) {
-    throw 'VirtualBox не найден в Program Files. Установите VirtualBox до запуска скрипта.'
+    throw 'VirtualBox was not found in Program Files. Install VirtualBox first.'
 }
 
 $vmName = 'otus-proxmox-19'
@@ -17,31 +17,31 @@ $expectedSha256 = '4e88fe416df9b527624a175f24c9aa07c714d3332afb1ee3dbf3879573ef2
 function Invoke-VBox {
     & $vbox @args
     if ($LASTEXITCODE -ne 0) {
-        throw "VBoxManage завершился с кодом $LASTEXITCODE (аргументы: $($args -join ' '))"
+        throw "VBoxManage exited with code $LASTEXITCODE (arguments: $($args -join ' '))"
     }
 }
 
 New-Item -ItemType Directory -Path $labRoot -Force | Out-Null
 
 if (-not (Test-Path -LiteralPath $iso)) {
-    Write-Host 'Скачиваю установочный ISO Proxmox VE 9.2 (около 1,6 ГБ)...'
+    Write-Host 'Downloading Proxmox VE 9.2 installer ISO (about 1.6 GiB)...'
     Invoke-WebRequest -Uri $isoUrl -OutFile $iso
 }
 $actualSha256 = (Get-FileHash -LiteralPath $iso -Algorithm SHA256).Hash.ToLowerInvariant()
 if ($actualSha256 -ne $expectedSha256) {
-    throw "Хеш ISO не совпал с официальным. Файл: $iso"
+    throw "ISO SHA-256 checksum does not match the official checksum. File: $iso"
 }
 
 $existing = & $vbox list vms
-if ($LASTEXITCODE -ne 0) { throw 'Не удалось получить список ВМ VirtualBox.' }
+if ($LASTEXITCODE -ne 0) { throw 'Could not list VirtualBox VMs.' }
 if ($existing | Select-String -SimpleMatch ('"' + $vmName + '"')) {
-    throw "ВМ $vmName уже существует. Скрипт не изменяет существующие ВМ."
+    throw "VM $vmName already exists. This script does not change existing VMs."
 }
 if (Test-Path -LiteralPath $disk) {
-    throw "Диск уже существует: $disk. Скрипт не перезаписывает диски."
+    throw "Disk already exists: $disk. This script does not overwrite disks."
 }
 
-Write-Host 'Создаю виртуальную машину Proxmox: 2 vCPU, 7 ГБ RAM, динамический диск 64 ГБ.'
+Write-Host 'Creating Proxmox VM: 2 vCPU, 7 GiB RAM, 64 GiB dynamically allocated disk.'
 Invoke-VBox createvm --name $vmName --ostype Debian_64 --register --basefolder $labRoot
 Invoke-VBox modifyvm $vmName --memory 7168 --cpus 2 --nested-hw-virt on --ioapic on --nic1 nat --nictype1 82540EM --nicpromisc1 allow-all --nat-pf1 'pve,tcp,127.0.0.1,8006,,8006' --boot1 dvd --boot2 disk
 Invoke-VBox storagectl $vmName --name SATA --add sata --controller IntelAHCI
@@ -49,6 +49,6 @@ Invoke-VBox createmedium disk --filename $disk --size 65536 --format VDI
 Invoke-VBox storageattach $vmName --storagectl SATA --port 0 --device 0 --type hdd --medium $disk
 Invoke-VBox storageattach $vmName --storagectl SATA --port 1 --device 0 --type dvddrive --medium $iso
 
-Write-Host 'ВМ создана. Запускаю установщик в окне VirtualBox.'
+Write-Host 'VM created. Starting the installer in VirtualBox.'
 Invoke-VBox startvm $vmName --type gui
-Write-Host 'После установки Proxmox откройте https://127.0.0.1:8006/ на этом компьютере.'
+Write-Host 'After installing Proxmox, open https://127.0.0.1:8006/ on this computer.'
