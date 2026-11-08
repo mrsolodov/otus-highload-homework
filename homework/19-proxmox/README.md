@@ -7,7 +7,7 @@
 - Proxmox VE с узлом, на котором есть хранилище `local` с типом содержимого `Import`, `local-lvm` для дисков и мост `vmbr0`. Если имена другие, их можно передать через переменные Terraform.
 - Два свободных VM ID: по умолчанию 9101 и 9102. На диски потребуется примерно 40 ГБ, плюс место под скачанный образ.
 - Рабочий DHCP в сети моста или собственные статические адреса для двух ВМ.
-- Terraform 1.7+ и API-токен Proxmox с правами создавать ВМ, загружать образ, использовать выбранные хранилища и сеть. Токен не надо записывать в файлы проекта.
+- Terraform 1.7+ и API-токен Proxmox с правами создавать ВМ, загружать образ, использовать выбранные хранилища и сеть. Для загрузки через `download-url` нужны `Datastore.AllocateTemplate`, `Sys.Audit` и `Sys.Modify`. Токен не надо записывать в файлы проекта.
 - Публичный SSH-ключ `~/.ssh/id_ed25519.pub` на компьютере, с которого выполняется `terraform apply`.
 
 Код использует провайдер `bpg/proxmox` версии 0.120.0. Его настройки API берутся из переменных окружения. TLS-сертификат сервера должен быть доверенным; если используется самоподписанный сертификат учебного стенда, проверку можно отдельно отключить переменной `PROXMOX_VE_INSECURE=true`.
@@ -16,7 +16,7 @@
 
 ```powershell
 Set-Location "homework/19-proxmox"
-$env:PROXMOX_VE_ENDPOINT = Read-Host "Адрес API Proxmox, например https://pve.example.org:8006/"
+$env:PROXMOX_VE_ENDPOINT = Read-Host "Адрес API Proxmox (HTTPS и порт 8006)"
 $secret = Read-Host "API-токен Proxmox" -AsSecureString
 $tokenPtr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secret)
 try {

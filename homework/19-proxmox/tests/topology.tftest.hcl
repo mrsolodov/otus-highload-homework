@@ -22,7 +22,7 @@ run "two_ubuntu_vms" {
   }
 
   assert {
-    condition     = proxmox_virtual_environment_download_file.ubuntu.content_type == "import"
+    condition     = proxmox_download_file.ubuntu.content_type == "import"
     error_message = "The image must use API-supported import storage."
   }
 }

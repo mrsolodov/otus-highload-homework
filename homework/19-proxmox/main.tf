@@ -1,4 +1,4 @@
-resource "proxmox_virtual_environment_download_file" "ubuntu" {
+resource "proxmox_download_file" "ubuntu" {
   node_name    = var.node_name
   datastore_id = var.image_datastore_id
   content_type = "import"
@@ -32,7 +32,7 @@ resource "proxmox_virtual_environment_vm" "ubuntu" {
 
   disk {
     datastore_id = var.vm_datastore_id
-    import_from  = proxmox_virtual_environment_download_file.ubuntu.id
+    import_from  = proxmox_download_file.ubuntu.id
     interface    = "virtio0"
     size         = 20
     iothread     = true
