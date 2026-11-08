@@ -26,6 +26,17 @@ variable "network_bridge" {
   default     = "vmbr0"
 }
 
+variable "vm_disk_size_gb" {
+  description = "Disk size per VM in GiB; 10 GiB fits the compact local lab"
+  type        = number
+  default     = 10
+
+  validation {
+    condition     = var.vm_disk_size_gb >= 10 && var.vm_disk_size_gb == floor(var.vm_disk_size_gb)
+    error_message = "vm_disk_size_gb must be a whole number of at least 10."
+  }
+}
+
 variable "ssh_public_key" {
   description = "OpenSSH public key used by the ubuntu user"
   type        = string
