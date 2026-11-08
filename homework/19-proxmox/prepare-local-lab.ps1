@@ -23,13 +23,48 @@ function Invoke-VBox {
 
 New-Item -ItemType Directory -Path $labRoot -Force | Out-Null
 
-if (-not (Test-Path -LiteralPath $iso)) {
-    Write-Host 'Downloading Proxmox VE 9.2 installer ISO (about 1.6 GiB)...'
-    Invoke-WebRequest -Uri $isoUrl -OutFile $iso
+if (Test-Path -LiteralPath $iso) {
+    $existingSha256 = (Get-FileHash -LiteralPath $iso -Algorithm SHA256).Hash.ToLowerInvariant()
+    if ($existingSha256 -ne $expectedSha256) {
+        $unverified = "$iso.unverified-$([guid]::NewGuid().ToString('N'))"
+        Move-Item -LiteralPath $iso -Destination $unverified
+        Write-Warning "Existing ISO did not match the official checksum; moved to $unverified"
+    }
 }
-$actualSha256 = (Get-FileHash -LiteralPath $iso -Algorithm SHA256).Hash.ToLowerInvariant()
-if ($actualSha256 -ne $expectedSha256) {
-    throw "ISO SHA-256 checksum does not match the official checksum. File: $iso"
+
+if (-not (Test-Path -LiteralPath $iso)) {
+    if (-not (Get-Command curl.exe -ErrorAction SilentlyContinue)) {
+        throw 'curl.exe is required to download the ISO.'
+    }
+
+    $partial = "$iso.partial"
+    if (Test-Path -LiteralPath $partial) {
+        Remove-Item -LiteralPath $partial
+    }
+
+    Write-Host 'Downloading Proxmox VE 9.2 installer ISO (about 1.6 GiB)...'
+    $curlArgs = @('--fail', '--location', '--show-error', '--silent', '--retry', '2', '--connect-timeout', '20', '--output', $partial, $isoUrl)
+    & curl.exe @curlArgs
+    $curlExit = $LASTEXITCODE
+    if ($curlExit -eq 60) {
+        Write-Warning 'Certificate validation failed. Retrying this ISO download without certificate validation; the pinned SHA-256 must still match.'
+        if (Test-Path -LiteralPath $partial) {
+            Remove-Item -LiteralPath $partial
+        }
+        & curl.exe --insecure @curlArgs
+        $curlExit = $LASTEXITCODE
+    }
+    if ($curlExit -ne 0) {
+        throw "ISO download failed. curl exit code: $curlExit"
+    }
+    if (-not (Test-Path -LiteralPath $partial)) {
+        throw 'ISO download did not create a file.'
+    }
+    $downloadSha256 = (Get-FileHash -LiteralPath $partial -Algorithm SHA256).Hash.ToLowerInvariant()
+    if ($downloadSha256 -ne $expectedSha256) {
+        throw "Downloaded ISO did not match the official SHA-256 checksum. File: $partial"
+    }
+    Move-Item -LiteralPath $partial -Destination $iso
 }
 
 $existing = & $vbox list vms
