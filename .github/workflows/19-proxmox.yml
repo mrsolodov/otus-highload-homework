@@ -1,0 +1,56 @@
+name: 19 Proxmox Terraform
+
+on:
+  pull_request:
+    paths:
+      - 'homework/19-proxmox/**'
+      - '.github/workflows/19-proxmox.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'homework/19-proxmox/**'
+      - '.github/workflows/19-proxmox.yml'
+  workflow_dispatch:
+
+jobs:
+  powershell:
+    runs-on: windows-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Parse local lab setup script in Windows PowerShell 5.1
+        shell: powershell
+        run: |
+          foreach ($name in @('prepare-local-lab.ps1', 'prepare-virtualbox-boot.ps1')) {
+            $script = Join-Path $PWD "homework/19-proxmox/$name"
+            $bytes = [System.IO.File]::ReadAllBytes($script)
+            if (@($bytes | Where-Object { $_ -gt 127 }).Count -gt 0) {
+              throw "$name must remain ASCII or use a UTF-8 BOM."
+            }
+            $tokens = $null
+            $parseErrors = $null
+            [void][System.Management.Automation.Language.Parser]::ParseFile($script, [ref]$tokens, [ref]$parseErrors)
+            if ($parseErrors.Count -gt 0) {
+              $parseErrors | Format-List | Out-String | Write-Error
+              exit 1
+            }
+          }
+  terraform:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: homework/19-proxmox
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.16.3
+      - name: Format
+        run: terraform fmt -check -recursive
+      - name: Init and validate
+        run: |
+          terraform init -backend=false
+          terraform validate
+      - name: Mocked plan of two VMs
+        run: terraform test -no-color

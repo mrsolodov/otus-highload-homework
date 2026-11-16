@@ -16,8 +16,9 @@
 | 14 | Сбор логов двух веб-узлов в кластер Elasticsearch и просмотр в Kibana | [`homework/14-elasticsearch`](homework/14-elasticsearch/) |
 | 16 | Kafka между двумя Logstash: очередь логов веб-узлов перед Elasticsearch | [`homework/16-kafka`](homework/16-kafka/) |
 | 17 | Consul: DNS веб-портала с health check и исключением недоступного узла | [`homework/17-consul`](homework/17-consul/) |
+| 19 | Две Ubuntu ВМ в Proxmox VE через Terraform и cloud-init; конфигурация и проверки без реального Proxmox | [`homework/19-proxmox`](homework/19-proxmox/) |
 
-Работы 03, 05, 10, 11, 12, 14, 16 и 17 находятся в `main`; работы 06 и 07 доступны в отдельных ветках.
+Работы 03, 05, 10, 11, 12, 14, 16, 17 и 19 находятся в `main`; работы 06 и 07 доступны в отдельных ветках.
 
 ## Секреты и локальные файлы
 
