@@ -1,0 +1,36 @@
+17 November 2026, local Proxmox lab (Ubuntu 24.04, Salt 3008.5)
+
+deploy.ps1: Salt deployment and health checks completed.
+The script checked two successful highstates and zero changes on the second run.
+
+salt 'web*' test.ping --static --out=json
+{
+    "web1": true,
+    "web2": true
+}
+
+salt-key -L: accepted keys web1 and web2; no unaccepted or rejected keys.
+
+web1: salt-master, salt-minion, nginx = active
+web2: salt-minion, nginx = active
+Both http://127.0.0.1/health endpoints returned "ok".
+The index pages identified web1 and web2 respectively.
+
+web1 iptables -S INPUT:
+-P INPUT DROP
+-A INPUT -i lo -j ACCEPT
+-A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+-A INPUT -p tcp -m tcp --dport 22 -j ACCEPT
+-A INPUT -p tcp -m tcp --dport 80 -j ACCEPT
+-A INPUT -p icmp -j ACCEPT
+-A INPUT -p tcp -m multiport --dports 4505,4506 -j ACCEPT
+
+web2 iptables -S INPUT:
+-P INPUT DROP
+-A INPUT -i lo -j ACCEPT
+-A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+-A INPUT -p tcp -m tcp --dport 22 -j ACCEPT
+-A INPUT -p tcp -m tcp --dport 80 -j ACCEPT
+-A INPUT -p icmp -j ACCEPT
+
+iptables-restore --test < /etc/iptables/rules.v4: success on both nodes.
