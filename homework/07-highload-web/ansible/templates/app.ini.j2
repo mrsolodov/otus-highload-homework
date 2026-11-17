@@ -1,0 +1,12 @@
+[uwsgi]
+plugins = python3
+chdir = /opt/otus-web
+wsgi-file = /opt/otus-web/app.py
+callable = application
+socket = {{ private_ip }}:3031
+master = true
+processes = 2
+uid = www-data
+gid = www-data
+vacuum = true
+die-on-term = true

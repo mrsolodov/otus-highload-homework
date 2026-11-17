@@ -1,0 +1,29 @@
+global_defs {
+    router_id {{ inventory_hostname }}
+    enable_script_security
+}
+
+vrrp_script check_nginx {
+    script "/usr/bin/curl -fsS -o /dev/null --max-time 3 http://127.0.0.1/health"
+    interval 2
+    fall 2
+    rise 2
+}
+
+vrrp_instance OTUS_WEB {
+    state BACKUP
+    interface {{ private_address.stdout.split()[1] }}
+    virtual_router_id 77
+    priority {{ vrrp_priority }}
+    advert_int 1
+    unicast_src_ip {{ private_ip }}
+    unicast_peer {
+        {{ peer_ip }}
+    }
+    virtual_ipaddress {
+        192.168.56.100/24 dev {{ private_address.stdout.split()[1] }}
+    }
+    track_script {
+        check_nginx
+    }
+}

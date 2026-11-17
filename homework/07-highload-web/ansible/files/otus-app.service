@@ -1,0 +1,14 @@
+[Unit]
+Description=OTUS uWSGI backend
+Wants=network-online.target
+After=network-online.target postgresql.service remote-fs.target
+RequiresMountsFor=/srv/otus-static
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/uwsgi --ini /opt/otus-web/app.ini
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

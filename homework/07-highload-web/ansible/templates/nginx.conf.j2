@@ -1,0 +1,20 @@
+upstream otus_apps {
+    server 192.168.56.21:3031 max_fails=1 fail_timeout=2s;
+    server 192.168.56.22:3031 max_fails=1 fail_timeout=2s;
+}
+
+server {
+    listen 80 default_server;
+    server_name _;
+    charset utf-8;
+    add_header X-Frontend {{ inventory_hostname }} always;
+
+    location / {
+        include uwsgi_params;
+        uwsgi_pass otus_apps;
+        uwsgi_connect_timeout 2s;
+        uwsgi_read_timeout 5s;
+        uwsgi_next_upstream error timeout http_500 http_502 http_503;
+        uwsgi_next_upstream_tries 2;
+    }
+}
