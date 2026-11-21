@@ -1,0 +1,18 @@
+Vault Raft peers:
+Node      Address        State       Voter
+----      -------        -----       -----
+vault1    vault1:8201    leader      true
+vault2    vault2:8201    follower    true
+vault3    vault3:8201    follower    true
+
+Vault database role: default_ttl=120 max_ttl=120
+
+Nomad allocations:
+ID        Node ID   Task Group  Version  Desired  Status   Created   Modified
+5abbd960  65895bec  web         0        run      running  2m4s ago  1m48s ago
+7a20104a  65895bec  web         0        run      running  2m4s ago  1m48s ago
+
+Nomad services:
+Job ID       Address             Tags  Node ID   Alloc ID
+otus-portal  172.28.19.11:23487  []    65895bec  5abbd960
+otus-portal  172.28.19.11:31907  []    65895bec  7a20104a

@@ -1,0 +1,78 @@
+name: otus33
+services:
+  vault-permissions:
+    image: hashicorp/vault:1.19
+    user: "0:0"
+    entrypoint: ["sh", "-ec", "chown -R 100:1000 /data/vault1 /data/vault2 /data/vault3"]
+    volumes:
+      - vault1-data:/data/vault1
+      - vault2-data:/data/vault2
+      - vault3-data:/data/vault3
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: portal
+      POSTGRES_USER: vault_admin
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vault_admin -d portal"]
+      interval: 5s
+      retries: 20
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+  vault1:
+    image: hashicorp/vault:1.19
+    command: server
+    cap_add: [IPC_LOCK]
+    volumes:
+      - vault1-data:/vault/data
+      - ./vault/vault1.hcl:/vault/config/vault.hcl:ro
+    ports:
+      - "127.0.0.1:8200:8200"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      vault-permissions:
+        condition: service_completed_successfully
+  vault2:
+    image: hashicorp/vault:1.19
+    command: server
+    cap_add: [IPC_LOCK]
+    volumes:
+      - vault2-data:/vault/data
+      - ./vault/vault2.hcl:/vault/config/vault.hcl:ro
+    ports:
+      - "127.0.0.1:8202:8200"
+    depends_on:
+      vault1:
+        condition: service_started
+      vault-permissions:
+        condition: service_completed_successfully
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+  vault3:
+    image: hashicorp/vault:1.19
+    command: server
+    cap_add: [IPC_LOCK]
+    volumes:
+      - vault3-data:/vault/data
+      - ./vault/vault3.hcl:/vault/config/vault.hcl:ro
+    ports:
+      - "127.0.0.1:8204:8200"
+    depends_on:
+      vault1:
+        condition: service_started
+      vault-permissions:
+        condition: service_completed_successfully
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+volumes:
+  postgres-data:
+  vault1-data:
+  vault2-data:
+  vault3-data:

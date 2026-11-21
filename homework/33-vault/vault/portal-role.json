@@ -1,0 +1,14 @@
+{
+  "role_type": "jwt",
+  "bound_audiences": ["vault.io"],
+  "bound_claims": {
+    "nomad_namespace": "default",
+    "nomad_job_id": "otus-portal"
+  },
+  "user_claim": "/nomad_allocation_id",
+  "user_claim_json_pointer": true,
+  "token_type": "service",
+  "token_policies": ["portal-db"],
+  "token_period": "30m",
+  "token_explicit_max_ttl": 0
+}

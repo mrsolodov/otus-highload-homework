@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS visits (
+    id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    visited_at timestamptz NOT NULL DEFAULT now()
+);
+GRANT USAGE ON SCHEMA public TO PUBLIC;
