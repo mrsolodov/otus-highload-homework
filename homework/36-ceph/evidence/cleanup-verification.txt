@@ -1,0 +1,6 @@
+Проверка после terraform apply destroy.tfplan, 25.11.2026
+
+compute instances: []
+compute disks: []
+VPC networks: []
+terraform state entries: 0

@@ -1,0 +1,15 @@
+#cloud-config
+package_update: false
+timezone: Europe/Moscow
+manage_etc_hosts: false
+
+write_files:
+  - path: /etc/hosts
+    append: true
+    content: |
+      10.136.1.11 ceph1
+      10.136.2.12 ceph2
+      10.136.3.13 ceph3
+
+runcmd:
+  - [systemctl, enable, --now, systemd-timesyncd]

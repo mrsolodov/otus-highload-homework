@@ -1,0 +1,25 @@
+Фрагмент вывода терминала во время остановки ceph2, 25.11.2026.
+Перенесён из протокола выполнения; это выборка, не полный сырой лог.
+
+$ sudo ceph -s
+health: HEALTH_WARN
+        insufficient standby MDS daemons available
+        1/3 mons down, quorum ceph1,ceph3
+        1 osds down
+        1 host (1 osds) down
+        Degraded data redundancy: 42/126 objects degraded (33.333%), 28 pgs degraded, 81 pgs undersized
+mon: 3 daemons, quorum ceph1,ceph3, out of quorum: ceph2
+mds: 1/1 daemons up
+osd: 3 osds: 2 up, 3 in
+pgs: 53 active+undersized, 28 active+undersized+degraded
+
+$ sudo ceph fs status cephfs
+cephfs - 1 clients
+RANK  STATE   MDS
+0     active  cephfs.ceph3.wiinrd
+
+$ sudo sha256sum -c /tmp/ceph-check.before.sha256
+/mnt/cephfs/check.bin: OK
+
+$ sudo cat /mnt/cephfs/during-failure.txt
+during-failure-2026-11-25T13:42:34+03:00

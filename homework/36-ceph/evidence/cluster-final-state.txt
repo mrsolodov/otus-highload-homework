@@ -1,0 +1,40 @@
+  cluster:
+    id:     016069a2-e8bb-11f1-b03a-d00d18c2df70
+    health: HEALTH_OK
+
+  services:
+    mon: 3 daemons, quorum ceph1,ceph3,ceph2 (age 3m) [leader: ceph1]
+    mgr: ceph1.nmulwc(active, since 17m), standbys: ceph2.enqpaa
+    mds: 1/1 daemons up, 1 standby
+    osd: 3 osds: 3 up (since 3m), 3 in (since 12m)
+
+  data:
+    volumes: 1/1 healthy
+    pools:   3 pools, 81 pgs
+    objects: 106 objects, 321 MiB
+    usage:   1.1 GiB used, 29 GiB / 30 GiB avail
+    pgs:     81 active+clean
+
+cephfs - 1 clients
+======
+RANK  STATE           MDS             ACTIVITY     DNS    INOS   DIRS   CAPS
+ 0    active  cephfs.ceph3.wiinrd  Reqs:    0 /s    14     17     12      4
+       POOL           TYPE     USED  AVAIL
+cephfs.cephfs.meta  metadata   298k  9358M
+cephfs.cephfs.data    data     960M  9358M
+    STANDBY MDS
+cephfs.ceph2.lzevuz
+MDS version: ceph version 20.2.5 (ed27c686770872022f4c1de04f6b0ac5d5384ded) tentacle (stable - RelWithDebInfo)
+ID  CLASS  WEIGHT   TYPE NAME       STATUS  REWEIGHT  PRI-AFF
+-1         0.02939  root default
+-3         0.00980      host ceph1
+ 0    hdd  0.00980          osd.0       up   1.00000  1.00000
+-5         0.00980      host ceph2
+ 1    hdd  0.00980          osd.1       up   1.00000  1.00000
+-7         0.00980      host ceph3
+ 2    hdd  0.00980          osd.2       up   1.00000  1.00000
+81 pgs: 81 active+clean; 321 MiB data, 1.1 GiB used, 29 GiB / 30 GiB avail
+/mnt/cephfs/check.bin: OK
+during-failure-2026-11-25T13:42:34+03:00
+TARGET      SOURCE    FSTYPE         OPTIONS
+/mnt/cephfs ceph-fuse fuse.ceph-fuse rw,nosuid,nodev,relatime,user_id=0,group_id=0,allow_other
